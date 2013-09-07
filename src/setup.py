@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='caper',
     version='0.1',
-    packages=['caper', 'caper.fragment_parsers'],
+    packages=['caper'],
     package_dir={'': 'src'},
     url='',
     license='',

@@ -15,8 +15,8 @@
 
 import pprint
 import re
-from caper.fragment_matcher import FragmentMatcher
-from caper.fragment_parsers import FragmentParser
+from caper.matcher import FragmentMatcher
+from caper.parser import FragmentParser
 
 
 class Caper(object):

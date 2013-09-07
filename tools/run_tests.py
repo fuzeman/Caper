@@ -57,6 +57,8 @@ class CaperTests(object):
         start = raw_input("Start position:")
         if start.strip() != '':
             start = int(start)
+        else:
+            start = 0
         print
 
         for i, name in enumerate(self.test_names):
