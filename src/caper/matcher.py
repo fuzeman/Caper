@@ -15,45 +15,12 @@
 
 import re
 
-PATTERNS = [
-    ('identifier', [
-        r'S(?P<season>\d+)E(?P<episode>\d+)',
-        r'(S(?P<season>\d+))|(E(?P<episode>\d+))',
-        r'(?P<season>\d+)x(?P<episode>\d+)'
-    ]),
-    ('video', [
-        r'(?P<aspect>FS|WS)',
-
-        (r'(?P<source>%s)', [
-            'HDTV',
-            'PDTV',
-            'DSR',
-            'DVDRiP'
-        ]),
-
-        (r'(?P<codec>%s)', [
-            'XViD'
-        ]),
-
-        (r'(?P<language>%s)', [
-            'GERMAN',
-            'DUTCH',
-            'FRENCH',
-            'SWEDiSH',
-            'DANiSH'
-        ]),
-    ]),
-    ('extra', [
-        r'(?P<internal>iNT|iNTERNAL)',
-    ])
-]
-
 
 class FragmentMatcher(object):
-    def __init__(self):
+    def __init__(self, pattern_groups):
         self.regex = {}
 
-        for group_name, patterns in PATTERNS:
+        for group_name, patterns in pattern_groups:
             if group_name not in self.regex:
                 self.regex[group_name] = []
 
@@ -64,12 +31,15 @@ class FragmentMatcher(object):
 
                 self.regex[group_name].append(re.compile(pattern, re.IGNORECASE))
 
-    def match(self, fragment, single=True):
+    def match(self, value, group_name=None, single=True):
         result = None
 
         for group, patterns in self.regex.items():
+            if group_name and group != group_name:
+                continue
+
             for pattern in patterns:
-                match = pattern.match(fragment)
+                match = pattern.match(value)
 
                 if match:
                     if result is None:

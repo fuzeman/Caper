@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import pprint
 from caper import Caper
 
 
@@ -69,7 +70,8 @@ class CaperTests(object):
 
             result = self.caper.parse(name)
 
-            print '[RESULT]', result
+            print '[RESULT]'
+            #pprint.pprint(result._info)
 
             print "Press ENTER to continue testing"
             raw_input()

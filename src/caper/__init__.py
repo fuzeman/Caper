@@ -13,87 +13,61 @@
 # limitations under the License.
 
 
-import pprint
-import re
 from caper.matcher import FragmentMatcher
-from caper.parser import FragmentParser
+from caper.parsers.anime import AnimeParser
+from caper.parsers.scene import SceneParser
+
+
+FRAGMENT_SEPARATORS = ['.', '-', '_', ' ']
 
 
 class Caper(object):
-    def __init__(self):
-        self.fragment_matcher = FragmentMatcher()
-        self.fragment_parser = FragmentParser()
+    def _split(self, name):
+        fragments = []
+        cur = CaperFragment()
 
+        def end_fragment(fragments, cur):
+            cur.left = fragments[len(fragments) - 1] if len(fragments) > 0 else None
+            if cur.left:
+                cur.left_sep = cur.left.right_sep
+                cur.left.right = cur
+
+            cur.right_sep = ch
+
+            fragments.append(cur)
+
+        for x, ch in enumerate(name):
+            if ch in FRAGMENT_SEPARATORS:
+                #print cur.value
+                end_fragment(fragments, cur)
+
+                # Reset
+                cur = CaperFragment()
+            else:
+                cur.value += ch
+
+        if cur.value != "":
+            #print cur.value
+            end_fragment(fragments, cur)
+
+        return fragments
 
     def parse(self, name):
-        fragments = re.split(r'\.|-|_', name)
+        fragments = self._split(name)
 
-        result = CaperResult()
-
-        for x, fragment in enumerate(fragments):
-            match = self.fragment_matcher.match(fragment)
-
-            if match:
-                result.update(match)
-            else:
-                success = self.fragment_parser.run(
-                    result, fragment,
-                    position=x + 1,
-                    total=len(fragments)
-                )
-
-                if not success:
-                    print 'WARNING: Unable to find match for [%s] "%s" fragment' % (x, fragment)
-
-        print
-        pprint.pprint(result._info)
-        print
+        # TODO multi-parser autodetection
+        parser = AnimeParser(fragments)
+        parser.run()
 
 
-class CaperResult(object):
+class CaperFragment(object):
     def __init__(self):
-        self._info = {}
+        self.value = ""
 
-    def update(self, match, root=None):
-        if root is None:
-            root = self._info
+        self.left = None
+        self.left_sep = None
 
-        for key in match:
-            if type(match[key]) is dict:
-                if key not in root:
-                    root[key] = {}
+        self.right = None
+        self.right_sep = None
 
-                self.update(match[key], root[key])
-            else:
-                if match[key]:
-                    if key not in root:
-                        root[key] = []
-
-                    root[key].append(match[key])
-
-    def has_any(self, keys, root=None):
-        if root is None:
-            root = self._info
-
-        if not root:
-            return False
-
-        if type(keys) != list:
-            keys = [keys]
-
-        for key in keys:
-            key = key.split('.')
-            head = key[0]
-
-            if head in root:
-                # If the key is single length we are finished
-                if len(key) == 1:
-                    return True
-
-                # Traverse further into the dictionary
-                if len(key) > 1:
-                    key.pop(0)
-                    if self.has_any(key, root[head]):
-                        return True
-
-        return False
+        self.captured = False
