@@ -29,7 +29,7 @@ PATTERN_GROUPS = [
         r'Ep(?P<episode>\d+)',
         r'(?P<absolute>\d+)',
 
-        r'Episode',
+        (r'Episode', r'(?P<episode>\d+)'),
     ]),
     ('video', [
         (r'(?P<h264_profile>%s)', [

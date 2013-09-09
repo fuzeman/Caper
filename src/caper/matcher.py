@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import pprint
 
 import re
+from caper.helpers import is_list_type
 
 
 class FragmentMatcher(object):
@@ -25,13 +26,28 @@ class FragmentMatcher(object):
                 self.regex[group_name] = []
 
             for pattern in patterns:
-                # Format extended patterns
-                if type(pattern) is tuple:
-                    pattern = pattern[0] % '|'.join(pattern[1])
+                if type(pattern) is str:
+                    pattern = (pattern,)
 
-                self.regex[group_name].append(re.compile(pattern, re.IGNORECASE))
+                if type(pattern) is tuple and len(pattern) == 2:
+                    if is_list_type(pattern[1], str):
+                        pattern = (pattern,)
 
-    def match(self, value, group_name=None, single=True):
+                result = []
+                for value in pattern:
+                    if type(value) is tuple:
+                        if len(value) == 2:
+                            value = value[0] % '|'.join(value[1])
+                        elif len(value) == 1:
+                            value = value[0]
+
+                    result.append(re.compile(value, re.IGNORECASE))
+
+                result = tuple(result)
+
+                self.regex[group_name].append(result)
+
+    def parser_match(self, parser, group_name, single=True):
         result = None
 
         for group, patterns in self.regex.items():
@@ -39,17 +55,66 @@ class FragmentMatcher(object):
                 continue
 
             for pattern in patterns:
-                match = pattern.match(value)
+                fragments = []
+                pattern_matched = True
+                pattern_result = {}
 
-                if match:
+                for fragment_pattern in pattern:
+                    if not parser.fragment_available():
+                        pattern_matched = False
+                        break
+
+                    fragment = parser.next_fragment()
+                    fragments.append(fragment)
+
+                    match = fragment_pattern.match(fragment.value)
+                    if not match:
+                        pattern_matched = False
+                        break
+
+                    pattern_result.update(match.groupdict())
+
+                if pattern_matched:
                     if result is None:
                         result = {}
+
                     if group not in result:
                         result[group] = {}
 
-                    result[group].update(match.groupdict())
+                    print '[PARSER_MATCH] Matched on <%s>' % ' '.join([f.value for f in fragments])
+
+                    result[group].update(pattern_result)
 
                     if single:
                         return result
+                else:
+                    #print "pattern didn't find match, rewinding %s fragments" % num_fragments
+                    parser.rewind(len(fragments))
+
+        # Skip over the fragment if we couldn't find a result
+        if not result and parser.fragment_available():
+            parser.next_fragment()
+
+    def value_match(self, value, group_name=None, single=True):
+        result = None
+
+        for group, patterns in self.regex.items():
+            if group_name and group != group_name:
+                continue
+
+            for pattern in patterns:
+                match = pattern[0].match(value)
+                if not match:
+                    continue
+
+                if result is None:
+                    result = {}
+                if group not in result:
+                    result[group] = {}
+
+                result[group].update(match.groupdict())
+
+                if single:
+                    return result
 
         return result

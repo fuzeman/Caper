@@ -34,10 +34,14 @@ class Parser(object):
         fragment = self.fragments[self._position]
 
         self._position += 1
+
+        print '[NEXT_FRAGMENT: "%s"]' % fragment.value
         return fragment
 
     def rewind(self, amount=1):
         self._position -= amount
+
+        print '[REWIND: %s]' % amount
 
     def fragment_available(self):
         return self._position < len(self.fragments)
@@ -67,21 +71,26 @@ class CaptureStep(object):
         #: @type: bool
         self.single = single
 
-    def execute(self, fragment):
+    def execute(self, parser):
         if self.is_complete():
             return
 
         if self.regex:
-            match = self.capture_group.parser.matcher.match(fragment.value, self.regex)
+            match = self.capture_group.parser.matcher.parser_match(parser, self.regex)
+            print '[REGEX] %s' % self.tag
             if match:
                 self.match_found(match)
                 return True
         elif self.func:
+            fragment = parser.next_fragment()
             match = self.func(fragment)
+            print '[FUNC] %s += "%s"' % (self.tag, match)
             if match:
                 self.match_found({self.tag: match})
                 return True
         else:
+            fragment = parser.next_fragment()
+            print '[RAW] %s += "%s"' % (self.tag, fragment.value)
             self.match_found({self.tag: fragment.value})
             return True
 
@@ -144,7 +153,7 @@ class CaptureConstraint(object):
         return value == expected
 
     def _compare_re(self, value, group):
-        match = self.capture_group.parser.matcher.match(value, group, single=True)
+        match = self.capture_group.parser.matcher.value_match(value, group, single=True)
         return match is not None
 
     def execute(self, fragment):
@@ -198,20 +207,22 @@ class CaptureGroup(object):
 
     def execute(self, once=False):
         while self.parser.fragment_available():
-            fragment = self.parser.next_fragment()
-
             # Run through the constraints and break on any matches
             for constraint in self.constraints:
+                fragment = self.parser.next_fragment()
+
                 if constraint.execute(fragment):
                     print 'capturing broke on "%s" at %s' % (fragment.value, constraint)
                     self.parser.rewind()
                     return
+                else:
+                    self.parser.rewind()
 
             # Run through the steps
             complete = []
             for step in self.steps:
-                if step.execute(fragment):
-                    print 'Match found on %s' % fragment.value
+                if step.execute(self.parser):
+                    pass
                 complete.append(step.is_complete())
 
             # Break if all the steps are complete
