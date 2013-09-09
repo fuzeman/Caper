@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
 
 from logr import Logr
 from caper import FragmentMatcher
@@ -152,9 +153,14 @@ class CaptureConstraint(object):
     def _compare_eq(self, value, expected):
         return value == expected
 
-    def _compare_re(self, value, group):
-        match = self.capture_group.parser.matcher.value_match(value, group, single=True)
-        return match is not None
+    def _compare_re(self, value, arg):
+        if type(arg) is str:
+            match = self.capture_group.parser.matcher.value_match(value, arg, single=True)
+            return match is not None
+        elif type(re.compile('.')).__name__ == 'SRE_Pattern':
+            return arg.match(value) is not None
+
+        raise ValueError("Unexpected argument type")
 
     def execute(self, fragment):
         results = []

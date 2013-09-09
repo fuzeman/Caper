@@ -26,7 +26,7 @@ class CaperTests(object):
         self.test_names = None
 
     def _read_header(self, fp):
-        header = fp.readline().split(",")
+        header = fp.readline().strip().split(",")
 
         for i, col in enumerate(header):
             if col == 'name':
@@ -44,20 +44,19 @@ class CaperTests(object):
 
             self.test_names = []
             for i, line in enumerate(fp):
-                row = line.split(',')
+                row = line.strip().split(',')
                 self.test_names.append(row[self.name_col])
 
                 if len(self.test_names) >= limit:
                     break
 
-        Logr.info("loaded %s names for testing", len(self.test_names))
+        print "loaded %s names for testing" % len(self.test_names)
 
     def run(self):
         max_num_length = len(str(len(self.test_names)))
         row_format = '[%%0%dd] %%s' % max_num_length
 
-        print
-        start = raw_input("Start position:")
+        start = raw_input('Start position: ')
         if start.strip() != '':
             start = int(start)
         else:
@@ -79,6 +78,18 @@ if __name__ == '__main__':
     Logr.configure(logging.INFO)
     tests = CaperTests()
 
-    tests.load('predb_tv.csv', 100)
+    test_file = ''
+    while test_file == '':
+        test_file = raw_input('Test file [scene.csv]: ')
+
+        if test_file == '':
+            test_file = 'scene.csv'
+
+        if not os.path.isfile(test_file):
+            test_file = ''
+            print "ERROR: Test file does not exist"
+            print
+
+    tests.load(test_file, 100)
 
     tests.run()

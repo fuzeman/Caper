@@ -18,7 +18,7 @@ import re
 from caper.parsers.base import Parser
 
 
-REGEX_EPISODE_ARTIFACTS = re.compile(r'[^a-z0-9]', re.IGNORECASE)
+REGEX_GROUP = re.compile(r'(\(|\[)(?P<group>.*?)(\)|\])', re.IGNORECASE)
 
 
 PATTERN_GROUPS = [
@@ -59,13 +59,12 @@ class AnimeParser(Parser):
         super(AnimeParser, self).__init__(fragments, PATTERN_GROUPS)
 
     def capture_group(self, fragment):
-        if not fragment.value.startswith('['):
+        match = REGEX_GROUP.match(fragment.value)
+
+        if not match:
             return None
 
-        if not fragment.value.endswith(']'):
-            return None
-
-        return fragment.value[1:-1]
+        return match.group('group')
 
     def run(self):
         self.capture('group', func=self.capture_group)\
