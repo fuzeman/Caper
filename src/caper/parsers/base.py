@@ -67,11 +67,9 @@ class CaptureStep(object):
         #: @type: bool
         self.single = single
 
-        self.complete = False
-
     def execute(self, fragment):
-        if self.complete:
-            return False
+        if self.is_complete():
+            return
 
         if self.regex:
             match = self.capture_group.parser.matcher.match(fragment.value, self.regex)
@@ -89,13 +87,25 @@ class CaptureStep(object):
 
         return False
 
+    def is_complete(self):
+        return self.single and self.capture_group.parser.result.has_any(self.tag)
+
+    def match_valid(self, match):
+        if not match:
+            return False
+
+        has_data = False
+        for key, value in match.items():
+            if value:
+                has_data = True
+
+        return has_data
+
     def match_found(self, match):
+        if not self.match_valid(match):
+            return
+
         self.capture_group.parser.result.update(match)
-
-        if self.single:
-            self.complete = True
-
-
 
     def __repr__(self):
         attribute_values = [key + '=' + repr(getattr(self, key))
@@ -134,7 +144,7 @@ class CaptureConstraint(object):
         return value == expected
 
     def _compare_re(self, value, group):
-        match = self.capture_group.parser.matcher.match(value, group)
+        match = self.capture_group.parser.matcher.match(value, group, single=True)
         return match is not None
 
     def execute(self, fragment):
@@ -168,7 +178,7 @@ class CaptureGroup(object):
         self.constraints = []
 
     def capture(self, tag, regex=None, func=None, single=True):
-        #print 'capture("%s", "%s", %s, %s)' % (tag, regex, func, single)
+        print 'capture("%s", "%s", %s, %s)' % (tag, regex, func, single)
 
         self.steps.append(CaptureStep(
             self, tag,
@@ -186,7 +196,7 @@ class CaptureGroup(object):
 
         return self
 
-    def execute(self):
+    def execute(self, once=False):
         while self.parser.fragment_available():
             fragment = self.parser.next_fragment()
 
@@ -197,5 +207,17 @@ class CaptureGroup(object):
                     self.parser.rewind()
                     return
 
+            # Run through the steps
+            complete = []
             for step in self.steps:
-                step.execute(fragment)
+                if step.execute(fragment):
+                    print 'Match found on %s' % fragment.value
+                complete.append(step.is_complete())
+
+            # Break if all the steps are complete
+            if all(complete):
+                print 'all steps complete, breaking'
+                return
+            elif once:
+                self.parser.rewind()
+                return

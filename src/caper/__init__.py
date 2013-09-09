@@ -24,9 +24,12 @@ FRAGMENT_SEPARATORS = ['.', '-', '_', ' ']
 class Caper(object):
     def _split(self, name):
         fragments = []
+        cur_position = 0
         cur = CaperFragment()
 
-        def end_fragment(fragments, cur):
+        def end_fragment(fragments, cur, cur_position):
+            cur.position = cur_position
+
             cur.left = fragments[len(fragments) - 1] if len(fragments) > 0 else None
             if cur.left:
                 cur.left_sep = cur.left.right_sep
@@ -39,16 +42,17 @@ class Caper(object):
         for x, ch in enumerate(name):
             if ch in FRAGMENT_SEPARATORS:
                 #print cur.value
-                end_fragment(fragments, cur)
+                end_fragment(fragments, cur, cur_position)
 
                 # Reset
                 cur = CaperFragment()
+                cur_position += 1
             else:
                 cur.value += ch
 
         if cur.value != "":
             #print cur.value
-            end_fragment(fragments, cur)
+            end_fragment(fragments, cur, cur_position)
 
         return fragments
 
@@ -56,7 +60,7 @@ class Caper(object):
         fragments = self._split(name)
 
         # TODO multi-parser autodetection
-        parser = SceneParser(fragments)
+        parser = AnimeParser(fragments)
         parser.run()
 
 
@@ -70,4 +74,4 @@ class CaperFragment(object):
         self.right = None
         self.right_sep = None
 
-        self.captured = False
+        self.position = None

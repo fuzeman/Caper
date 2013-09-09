@@ -18,23 +18,37 @@ import re
 from caper.parsers.base import Parser
 
 
-REGEX_SPECIAL_CHAR = re.compile(r'[^a-z0-9]', re.IGNORECASE)
+REGEX_EPISODE_ARTIFACTS = re.compile(r'[^a-z0-9]', re.IGNORECASE)
 
 
 PATTERN_GROUPS = [
     ('identifier', [
-        r'(?P<absolute>\d+)'
+        r'S(?P<season>\d+)E(?P<episode>\d+)',
+        r'(S(?P<season>\d+))|(E(?P<episode>\d+))',
+
+        r'Ep(?P<episode>\d+)',
+        r'(?P<absolute>\d+)',
+
+        r'Episode',
     ]),
     ('video', [
         (r'(?P<h264_profile>%s)', [
             'Hi10P'
         ]),
         (r'.(?P<resolution>%s)', [
+            '720p',
+            '1080p',
+
             '960x720',
             '1920x1080'
         ]),
         (r'(?P<source>%s)', [
             'BD'
+        ]),
+    ]),
+    ('audio', [
+        (r'(?P<codec>%s)', [
+            'FLAC'
         ]),
     ])
 ]
@@ -53,25 +67,19 @@ class AnimeParser(Parser):
 
         return fragment.value[1:-1]
 
-    def until_show_name(self, fragment):
-        if not fragment.right:
-            return False
-
-        print fragment
-
-        if REGEX_SPECIAL_CHAR.match(fragment.right.value):
-            return True
-
-        return False
-
     def run(self):
-        self.capture('group', capture_func=self.capture_group)
+        self.capture('group', func=self.capture_group)\
+            .execute(once=True)
 
-        self.capture('show_name', until_func=self.until_show_name)
+        self.capture('show_name', single=False)\
+            .until(value__re='identifier')\
+            .until(value__re='video')\
+            .execute()
 
-        self.capture('identifier', capture_regex='identifier')
-
-        self.capture('video', capture_regex='video', until__left_sep__eq='-')
+        self.capture('identifier', regex='identifier') \
+            .capture('video', regex='video', single=False) \
+            .capture('audio', regex='audio', single=False) \
+            .execute()
 
         print
         pprint.pprint(self.result._info)
