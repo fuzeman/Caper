@@ -64,7 +64,6 @@ class AnimeParser(Parser):
 
         return False
 
-
     def run(self):
         self.capture('group', capture_func=self.capture_group)
 

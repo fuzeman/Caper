@@ -56,7 +56,7 @@ class Caper(object):
         fragments = self._split(name)
 
         # TODO multi-parser autodetection
-        parser = AnimeParser(fragments)
+        parser = SceneParser(fragments)
         parser.run()
 
 

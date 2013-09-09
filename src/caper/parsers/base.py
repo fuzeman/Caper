@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import pprint
 
 from caper import FragmentMatcher
 from caper.result import CaperResult
@@ -22,102 +22,180 @@ class Parser(object):
         self.fragments = fragments
         self.result = CaperResult()
 
-        self._matcher = FragmentMatcher(pattern_groups)
+        self.matcher = FragmentMatcher(pattern_groups)
+
         self._match_cache = {}
-        self._current_position = 0
+        self._position = 0
 
     def run(self):
         raise NotImplementedError()
 
-    def _next(self):
-        fragment = self.fragments[self._current_position]
+    def next_fragment(self):
+        fragment = self.fragments[self._position]
 
-        self._current_position += 1
+        self._position += 1
         return fragment
 
-    def _back(self):
-        self._current_position -= 1
+    def rewind(self, amount=1):
+        self._position -= amount
 
-    def _match(self, value, regex_group):
-        print 'match("%s", "%s")' % (value, regex_group)
+    def fragment_available(self):
+        return self._position < len(self.fragments)
 
-        match = self._matcher.match(value, regex_group)
+    def capture(self, tag, regex=None, func=None, single=True):
+        return CaptureGroup(self).capture(
+            tag,
+            regex=regex,
+            func=func,
+            single=single
+        )
 
-        if match:
-            print "\tmatch found"
-            return match
 
-        return None
+class CaptureStep(object):
+    REPR_KEYS = ['regex', 'func', 'single']
 
-    def _is_match(self, value, regex_group):
-        return self._match(value, regex_group) is not None
+    def __init__(self, capture_group, tag, regex=None, func=None, single=None):
+        #: @type: CaptureGroup
+        self.capture_group = capture_group
 
-    def _until(self, fragment, until_func=None, **kwargs):
-        if until_func and until_func(fragment):
-            return True
+        #: @type: str
+        self.tag = tag
+        #: @type: str
+        self.regex = regex
+        #: @type: function
+        self.func = func
+        #: @type: bool
+        self.single = single
 
-        for key in kwargs:
-            argument = kwargs[key]
-            if not argument:
-                continue
+        self.complete = False
 
-            # Get name and method from key
-            key = key.split('__')
-            if len(key) != 2:
-                continue
-            name, method_name = key
+    def execute(self, fragment):
+        if self.complete:
+            return False
 
-            # Get value from fragment
-            if not hasattr(fragment, name):
-                continue
-            target = getattr(fragment, name)
-
-            # Get method
-            if not hasattr(self, '_until_' + method_name):
-                continue
-            method = getattr(self, '_until_' + method_name)
-
-            if method(target, argument):
+        if self.regex:
+            match = self.capture_group.parser.matcher.match(fragment.value, self.regex)
+            if match:
+                self.match_found(match)
                 return True
+        elif self.func:
+            match = self.func(fragment)
+            if match:
+                self.match_found({self.tag: match})
+                return True
+        else:
+            self.match_found({self.tag: fragment.value})
+            return True
 
         return False
 
-    def _until_re(self, target, argument):
-        return self._is_match(target, argument)
+    def match_found(self, match):
+        self.capture_group.parser.result.update(match)
 
-    def _until_eq(self, target, argument):
-        return target == argument
+        if self.single:
+            self.complete = True
 
-    def capture(self, tag, capture_regex=None, until_func=None, capture_func=None, **kwargs):
-        print 'capture("%s", "%s")' % (tag, capture_regex)
 
-        if capture_regex and capture_func:
-            raise ValueError("Unable to call capture() with capture_regex and capture_func.")
 
-        until_kwargs = {}
+    def __repr__(self):
+        attribute_values = [key + '=' + repr(getattr(self, key))
+                            for key in self.REPR_KEYS
+                            if hasattr(self, key) and getattr(self, key)]
+
+        attribute_string = ', ' + ', '.join(attribute_values) if len(attribute_values) > 0 else ''
+
+        return "CaptureStep('%s'%s)" % (self.tag, attribute_string)
+
+
+class CaptureConstraint(object):
+    def __init__(self, capture_group, comparisons=None, **kwargs):
+        """Capture constraint object
+
+        :type capture_group: CaptureGroup
+        """
+
+        self.capture_group = capture_group
+
+        self.comparisons = comparisons if comparisons else []
+
         for key, value in kwargs.items():
-            if key.startswith('until__') and value:
-                until_kwargs[key[7:]] = value
+            key = key.split('__')
+            if len(key) != 2:
+                continue
+            name, method = key
 
-        while self._current_position < len(self.fragments):
-            fragment = self._next()
+            method = '_compare_' + method
+            if not hasattr(self, method):
+                continue
 
-            if self._until(fragment, until_func, **until_kwargs) :
-                print '\t', 'until break on "%s"' % fragment.value
-                self._back()
-                return
+            self.comparisons.append((name, getattr(self, method), value))
 
-            if capture_regex:
-                match = self._match(fragment.value, capture_regex)
-                if match:
-                    self.result.update(match)
-            else:
-                value = capture_func(fragment) if capture_func else fragment.value
-                if value:
-                    self.result.update({tag: value})
+    def _compare_eq(self, value, expected):
+        return value == expected
 
-            print '\t', fragment.value
+    def _compare_re(self, value, group):
+        match = self.capture_group.parser.matcher.match(value, group)
+        return match is not None
 
-            # Return if this is just a single capture
-            if len(until_kwargs) == 0 and not until_func:
-                return
+    def execute(self, fragment):
+        results = []
+
+        for name, method, argument in self.comparisons:
+            if not hasattr(fragment, name):
+                continue
+            value = getattr(fragment, name)
+
+            results.append(method(value, argument))
+
+        return all(results) if len(results) > 0 else False
+
+    def __repr__(self):
+        return "CaptureConstraint(comparisons=%s)" % repr(self.comparisons)
+
+
+class CaptureGroup(object):
+    def __init__(self, parser):
+        """Capture group object
+
+        :type parser: Parser
+        """
+
+        self.parser = parser
+
+        #: @type: list of CaptureStep
+        self.steps = []
+        #: @type: list of CaptureConstraint
+        self.constraints = []
+
+    def capture(self, tag, regex=None, func=None, single=True):
+        #print 'capture("%s", "%s", %s, %s)' % (tag, regex, func, single)
+
+        self.steps.append(CaptureStep(
+            self, tag,
+            regex=regex,
+            func=func,
+            single=single
+        ))
+
+        return self
+
+    def until(self, **kwargs):
+        #print 'until()'
+
+        self.constraints.append(CaptureConstraint(self, **kwargs))
+
+        return self
+
+    def execute(self):
+        while self.parser.fragment_available():
+            fragment = self.parser.next_fragment()
+
+            # Run through the constraints and break on any matches
+            for constraint in self.constraints:
+                if constraint.execute(fragment):
+                    print 'capturing broke on "%s" at %s' % (fragment.value, constraint)
+                    self.parser.rewind()
+                    return
+
+            for step in self.steps:
+                step.execute(fragment)

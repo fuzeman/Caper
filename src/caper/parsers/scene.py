@@ -14,7 +14,7 @@
 
 
 import pprint
-from caper.parsers.base import Parser
+from caper.parsers.base import Parser, CaptureGroup
 
 
 PATTERN_GROUPS = [
@@ -59,13 +59,18 @@ class SceneParser(Parser):
         return None
 
     def run(self):
-        self.capture('show_name', until__value__re='identifier')
+        self.capture('show_name')\
+            .until(value__re='identifier')\
+            .until(value__re='video')\
+            .execute()
 
-        self.capture('identifier', capture_regex='identifier')
+        self.capture('identifier', regex='identifier')\
+            .capture('video', regex='video', single=False)\
+            .until(left_sep__eq='-')\
+            .execute()
 
-        self.capture('video', capture_regex='video', until__left_sep__eq='-')
-
-        self.capture('group', capture_func=self.capture_group)
+        self.capture('group', func=self.capture_group)\
+            .execute()
 
         print
         pprint.pprint(self.result._info)
