@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pprint
 
+from logr import Logr
 from caper import FragmentMatcher
 from caper.result import CaperResult
 
@@ -35,13 +35,13 @@ class Parser(object):
 
         self._position += 1
 
-        print '[NEXT_FRAGMENT: "%s"]' % fragment.value
+        Logr.debug('(next_fragment) fragment.value: "%s"',  fragment.value)
         return fragment
 
     def rewind(self, amount=1):
         self._position -= amount
 
-        print '[REWIND: %s]' % amount
+        Logr.debug('(rewind) amount: %s', amount)
 
     def fragment_available(self):
         return self._position < len(self.fragments)
@@ -77,20 +77,20 @@ class CaptureStep(object):
 
         if self.regex:
             match = self.capture_group.parser.matcher.parser_match(parser, self.regex)
-            print '[REGEX] %s' % self.tag
+            Logr.debug('(execute) [regex] tag: "%s"', self.tag)
             if match:
                 self.match_found(match)
                 return True
         elif self.func:
             fragment = parser.next_fragment()
             match = self.func(fragment)
-            print '[FUNC] %s += "%s"' % (self.tag, match)
+            Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
             if match:
                 self.match_found({self.tag: match})
                 return True
         else:
             fragment = parser.next_fragment()
-            print '[RAW] %s += "%s"' % (self.tag, fragment.value)
+            Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
             self.match_found({self.tag: fragment.value})
             return True
 
@@ -187,7 +187,7 @@ class CaptureGroup(object):
         self.constraints = []
 
     def capture(self, tag, regex=None, func=None, single=True):
-        print 'capture("%s", "%s", %s, %s)' % (tag, regex, func, single)
+        Logr.debug('capture("%s", "%s", %s, %s)', tag, regex, func, single)
 
         self.steps.append(CaptureStep(
             self, tag,
@@ -199,8 +199,6 @@ class CaptureGroup(object):
         return self
 
     def until(self, **kwargs):
-        #print 'until()'
-
         self.constraints.append(CaptureConstraint(self, **kwargs))
 
         return self
@@ -212,7 +210,7 @@ class CaptureGroup(object):
                 fragment = self.parser.next_fragment()
 
                 if constraint.execute(fragment):
-                    print 'capturing broke on "%s" at %s' % (fragment.value, constraint)
+                    Logr.debug('capturing broke on "%s" at %s', fragment.value, constraint)
                     self.parser.rewind()
                     return
                 else:
@@ -227,7 +225,7 @@ class CaptureGroup(object):
 
             # Break if all the steps are complete
             if all(complete):
-                print 'all steps complete, breaking'
+                Logr.debug('all steps complete, breaking')
                 return
             elif once:
                 self.parser.rewind()

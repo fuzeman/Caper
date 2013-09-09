@@ -81,5 +81,4 @@ class AnimeParser(Parser):
             .capture('audio', regex='audio', single=False) \
             .execute()
 
-        print
         pprint.pprint(self.result._info)

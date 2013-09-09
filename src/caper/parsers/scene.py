@@ -72,5 +72,4 @@ class SceneParser(Parser):
         self.capture('group', func=self.capture_group)\
             .execute()
 
-        print
         pprint.pprint(self.result._info)

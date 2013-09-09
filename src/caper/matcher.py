@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pprint
 
 import re
+from logr import Logr
 from caper.helpers import is_list_type
 
 
@@ -81,14 +81,13 @@ class FragmentMatcher(object):
                     if group not in result:
                         result[group] = {}
 
-                    print '[PARSER_MATCH] Matched on <%s>' % ' '.join([f.value for f in fragments])
+                    Logr.debug('Matched on <%s>', ' '.join([f.value for f in fragments]))
 
                     result[group].update(pattern_result)
 
                     if single:
                         return result
                 else:
-                    #print "pattern didn't find match, rewinding %s fragments" % num_fragments
                     parser.rewind(len(fragments))
 
         # Skip over the fragment if we couldn't find a result

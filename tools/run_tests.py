@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 import os
-import pprint
+from logr import Logr
 from caper import Caper
 
 
@@ -49,18 +50,18 @@ class CaperTests(object):
                 if len(self.test_names) >= limit:
                     break
 
-        print "loaded %s names for testing" % len(self.test_names)
+        Logr.info("loaded %s names for testing", len(self.test_names))
 
     def run(self):
         max_num_length = len(str(len(self.test_names)))
         row_format = '[%%0%dd] %%s' % max_num_length
 
+        print
         start = raw_input("Start position:")
         if start.strip() != '':
             start = int(start)
         else:
             start = 0
-        print
 
         for i, name in enumerate(self.test_names):
             if i < start - 1:
@@ -70,17 +71,14 @@ class CaperTests(object):
 
             result = self.caper.parse(name)
 
-            print '[RESULT]'
-            #pprint.pprint(result._info)
-
             print "Press ENTER to continue testing"
             raw_input()
 
 
 if __name__ == '__main__':
+    Logr.configure(logging.INFO)
     tests = CaperTests()
 
     tests.load('predb_tv.csv', 100)
-    print
 
     tests.run()

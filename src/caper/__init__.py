@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from logr import Logr
 
 from caper.matcher import FragmentMatcher
 from caper.parsers.anime import AnimeParser
@@ -41,7 +41,6 @@ class Caper(object):
 
         for x, ch in enumerate(name):
             if ch in FRAGMENT_SEPARATORS:
-                #print cur.value
                 end_fragment(fragments, cur, cur_position)
 
                 # Reset
@@ -51,7 +50,6 @@ class Caper(object):
                 cur.value += ch
 
         if cur.value != "":
-            #print cur.value
             end_fragment(fragments, cur, cur_position)
 
         return fragments
