@@ -9,5 +9,5 @@ setup(
     license='',
     author='Dean Gardiner',
     author_email='gardiner91@gmail.com',
-    description=''
+    description='', requires = ['logr']
 )

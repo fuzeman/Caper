@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import pprint
-from caper.parsers.base import Parser, CaptureGroup
+from caper.parsers.base import Parser
 
 
 PATTERN_GROUPS = [
