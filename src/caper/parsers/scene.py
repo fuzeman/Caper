@@ -22,6 +22,8 @@ PATTERN_GROUPS = [
         ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', '^E(?P<episode_to>\d+)$'),
         # S02E13
         r'^S(?P<season>\d+)E(?P<episode>\d+)$',
+        # S01 E13
+        (r'^(S(?P<season>\d+))$', r'^(E(?P<episode>\d+))$'),
         # S02
         # E13
         r'^((S(?P<season>\d+))|(E(?P<episode>\d+)))$',
@@ -30,6 +32,13 @@ PATTERN_GROUPS = [
 
         # 2013.09.15
         (r'^(?P<year>\d{4})$', r'^(?P<month>\d{2})$', r'^(?P<day>\d{2})$'),
+        # 09.15.2013
+        (r'^(?P<month>\d{2})$', r'^(?P<day>\d{2})$', r'^(?P<year>\d{4})$'),
+        # TODO - US/UK Date Format Conflict? will only support US format for now..
+        # 15.09.2013
+        #(r'^(?P<day>\d{2})$', r'^(?P<month>\d{2})$', r'^(?P<year>\d{4})$'),
+        # 130915
+        r'^(?P<year_short>\d{2})(?P<month>\d{2})(?P<day>\d{2})$',
 
         # Season 3 Episode 14
         (r'^Se(ason)?$', r'^(?P<season>\d+)$', r'^Ep(isode)?$', r'^(?P<episode>\d+)$'),
@@ -65,7 +74,8 @@ PATTERN_GROUPS = [
             'DUTCH',
             'FRENCH',
             'SWEDiSH',
-            'DANiSH'
+            'DANiSH',
+            'iTALiAN'
         ]),
     ])
 ]
