@@ -18,9 +18,9 @@ from caper.parsers.base import Parser
 
 PATTERN_GROUPS = [
     ('identifier', [
-        r'S(?P<season>\d+)E(?P<episode>\d+)',
-        r'(S(?P<season>\d+))|(E(?P<episode>\d+))',
-        r'(?P<season>\d+)x(?P<episode>\d+)'
+        r'^S(?P<season>\d+)E(?P<episode>\d+)$',
+        r'^((S(?P<season>\d+))|(E(?P<episode>\d+)))$',
+        r'^(?P<season>\d+)x(?P<episode>\d+)$'
     ]),
     ('video', [
         r'(?P<aspect>FS|WS)',
@@ -33,6 +33,7 @@ PATTERN_GROUPS = [
         ]),
 
         (r'(?P<codec>%s)', [
+            'x264',
             'XViD'
         ]),
 
@@ -48,8 +49,8 @@ PATTERN_GROUPS = [
 
 
 class SceneParser(Parser):
-    def __init__(self, fragments):
-        super(SceneParser, self).__init__(fragments, PATTERN_GROUPS)
+    def __init__(self):
+        super(SceneParser, self).__init__(PATTERN_GROUPS)
 
     def capture_group(self, fragment):
         if fragment.left_sep == '-':
@@ -57,18 +58,20 @@ class SceneParser(Parser):
 
         return None
 
-    def run(self):
-        self.capture('show_name')\
+    def run(self, closures):
+        super(SceneParser, self).run(closures)
+
+        self.capture_fragment('show_name', single=False)\
             .until(value__re='identifier')\
             .until(value__re='video')\
             .execute()
 
-        self.capture('identifier', regex='identifier')\
-            .capture('video', regex='video', single=False)\
+        self.capture_fragment('identifier', regex='identifier')\
+            .capture_fragment('video', regex='video', single=False)\
             .until(left_sep__eq='-')\
             .execute()
 
-        self.capture('group', func=self.capture_group)\
+        self.capture_fragment('group', func=self.capture_group)\
             .execute()
 
-        pprint.pprint(self.result._info)
+        return self.result

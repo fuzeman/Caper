@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from logr import Logr
 
 from caper.matcher import FragmentMatcher
+from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
 
@@ -32,6 +34,12 @@ CL_END = 1
 
 
 class Caper(object):
+    def __init__(self):
+        self.parsers = {
+            'scene': SceneParser(),
+            'anime': AnimeParser()
+        }
+
     def _closure_split(self, name):
         closures = []
 
@@ -105,29 +113,16 @@ class Caper(object):
 
         return closures
 
-    def parse(self, name):
-        fragments = self._split(name)
+    def parse(self, name, parser='scene'):
+        closures = self._closure_split(name)
+        closures = self._fragment_split(closures)
+
+        # Print closures
+        for closure in closures:
+            Logr.debug("closure [%s]", closure.value)
+
+        if parser not in self.parsers:
+            raise ValueError("Unknown parser")
 
         # TODO autodetect the parser type
-        parser = AnimeParser(fragments)
-        parser.run()
-
-
-class CaperClosure(object):
-    def __init__(self, value):
-        self.value = value
-
-        self.fragments = None
-
-
-class CaperFragment(object):
-    def __init__(self):
-        self.value = ""
-
-        self.left = None
-        self.left_sep = None
-
-        self.right = None
-        self.right_sep = None
-
-        self.position = None
+        return self.parsers[parser].run(closures)

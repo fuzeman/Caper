@@ -27,7 +27,7 @@ PATTERN_GROUPS = [
         r'(S(?P<season>\d+))|(E(?P<episode>\d+))',
 
         r'Ep(?P<episode>\d+)',
-        r'(?P<absolute>\d+)',
+        r'$(?P<absolute>\d+)^',
 
         (r'Episode', r'(?P<episode>\d+)'),
     ]),
@@ -55,8 +55,8 @@ PATTERN_GROUPS = [
 
 
 class AnimeParser(Parser):
-    def __init__(self, fragments):
-        super(AnimeParser, self).__init__(fragments, PATTERN_GROUPS)
+    def __init__(self):
+        super(AnimeParser, self).__init__(PATTERN_GROUPS)
 
     def capture_group(self, fragment):
         match = REGEX_GROUP.match(fragment.value)
@@ -66,18 +66,20 @@ class AnimeParser(Parser):
 
         return match.group('group')
 
-    def run(self):
-        self.capture('group', func=self.capture_group)\
+    def run(self, closures):
+        super(AnimeParser, self).run(closures)
+
+        self.capture_closure('group', func=self.capture_group)\
             .execute(once=True)
 
-        self.capture('show_name', single=False)\
+        self.capture_fragment('show_name', single=False)\
             .until(value__re='identifier')\
             .until(value__re='video')\
             .execute()
 
-        self.capture('identifier', regex='identifier') \
-            .capture('video', regex='video', single=False) \
-            .capture('audio', regex='audio', single=False) \
+        self.capture_fragment('identifier', regex='identifier') \
+            .capture_fragment('video', regex='video', single=False) \
+            .capture_fragment('audio', regex='audio', single=False) \
             .execute()
 
-        pprint.pprint(self.result._info)
+        return self.result

@@ -15,224 +15,100 @@ import re
 
 from logr import Logr
 from caper import FragmentMatcher
+from caper.group import CaptureGroup
 from caper.result import CaperResult
 
 
 class Parser(object):
-    def __init__(self, fragments, pattern_groups):
-        self.fragments = fragments
+    def __init__(self, pattern_groups):
+        self.matcher = FragmentMatcher(pattern_groups)
+        self.reset()
+
+    def reset(self):
+        self.closures = None
         self.result = CaperResult()
 
-        self.matcher = FragmentMatcher(pattern_groups)
-
         self._match_cache = {}
-        self._position = 0
+        self._fragment_pos = -1
+        self._closure_pos = -1
+        self._history = []
 
-    def run(self):
-        raise NotImplementedError()
+    def run(self, closures):
+        self.reset()
+        self.closures = closures
+
+    #
+    # Closure Methods
+    #
+
+    def next_closure(self):
+        self._closure_pos += 1
+        closure = self.closures[self._closure_pos]
+
+        self._history.append(('fragment', -1 - self._fragment_pos))
+        self._fragment_pos = -1
+
+        if self._closure_pos != 0:
+            self._history.append(('closure', 1))
+
+        Logr.debug('(next_closure) closure.value: "%s"', closure.value)
+        return closure
+
+    def closure_available(self):
+        return self._closure_pos + 1 < len(self.closures)
+
+    #
+    # Fragment Methods
+    #
 
     def next_fragment(self):
-        fragment = self.fragments[self._position]
+        closure = self.closures[self._closure_pos]
 
-        self._position += 1
+        self._fragment_pos += 1
+        fragment = closure.fragments[self._fragment_pos]
 
-        Logr.debug('(next_fragment) fragment.value: "%s"',  fragment.value)
+        self._history.append(('fragment', 1))
+
+        Logr.debug('(next_fragment) closure.value "%s" - fragment.value: "%s"', closure.value, fragment.value)
         return fragment
 
-    def rewind(self, amount=1):
-        self._position -= amount
-
-        Logr.debug('(rewind) amount: %s', amount)
-
     def fragment_available(self):
-        return self._position < len(self.fragments)
+        if not self.closure_available():
+            return False
+        return self._fragment_pos + 1 < len(self.closures[self._closure_pos].fragments)
 
-    def capture(self, tag, regex=None, func=None, single=True):
-        return CaptureGroup(self).capture(
+    def rewind(self):
+        for source, delta in reversed(self._history):
+            Logr.debug('(rewind) Rewinding step: %s', (source, delta))
+            if source == 'fragment':
+                self._fragment_pos -= delta
+            elif source == 'closure':
+                self._closure_pos -= delta
+            else:
+                raise NotImplementedError()
+
+        self.commit()
+
+    def commit(self):
+        Logr.debug('(commit)')
+        self._history = []
+
+    #
+    # Capture Methods
+    #
+
+    def capture_fragment(self, tag, regex=None, func=None, single=True):
+        return CaptureGroup(self).capture_fragment(
             tag,
             regex=regex,
             func=func,
             single=single
         )
 
-
-class CaptureStep(object):
-    REPR_KEYS = ['regex', 'func', 'single']
-
-    def __init__(self, capture_group, tag, regex=None, func=None, single=None):
-        #: @type: CaptureGroup
-        self.capture_group = capture_group
-
-        #: @type: str
-        self.tag = tag
-        #: @type: str
-        self.regex = regex
-        #: @type: function
-        self.func = func
-        #: @type: bool
-        self.single = single
-
-    def execute(self, parser):
-        if self.is_complete():
-            return
-
-        if self.regex:
-            match = self.capture_group.parser.matcher.parser_match(parser, self.regex)
-            Logr.debug('(execute) [regex] tag: "%s"', self.tag)
-            if match:
-                self.match_found(match)
-                return True
-        elif self.func:
-            fragment = parser.next_fragment()
-            match = self.func(fragment)
-            Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
-            if match:
-                self.match_found({self.tag: match})
-                return True
-        else:
-            fragment = parser.next_fragment()
-            Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
-            self.match_found({self.tag: fragment.value})
-            return True
-
-        return False
-
-    def is_complete(self):
-        return self.single and self.capture_group.parser.result.has_any(self.tag)
-
-    def match_valid(self, match):
-        if not match:
-            return False
-
-        has_data = False
-        for key, value in match.items():
-            if value:
-                has_data = True
-
-        return has_data
-
-    def match_found(self, match):
-        if not self.match_valid(match):
-            return
-
-        self.capture_group.parser.result.update(match)
-
-    def __repr__(self):
-        attribute_values = [key + '=' + repr(getattr(self, key))
-                            for key in self.REPR_KEYS
-                            if hasattr(self, key) and getattr(self, key)]
-
-        attribute_string = ', ' + ', '.join(attribute_values) if len(attribute_values) > 0 else ''
-
-        return "CaptureStep('%s'%s)" % (self.tag, attribute_string)
-
-
-class CaptureConstraint(object):
-    def __init__(self, capture_group, comparisons=None, **kwargs):
-        """Capture constraint object
-
-        :type capture_group: CaptureGroup
-        """
-
-        self.capture_group = capture_group
-
-        self.comparisons = comparisons if comparisons else []
-
-        for key, value in kwargs.items():
-            key = key.split('__')
-            if len(key) != 2:
-                continue
-            name, method = key
-
-            method = '_compare_' + method
-            if not hasattr(self, method):
-                continue
-
-            self.comparisons.append((name, getattr(self, method), value))
-
-    def _compare_eq(self, value, expected):
-        return value == expected
-
-    def _compare_re(self, value, arg):
-        if type(arg) is str:
-            match = self.capture_group.parser.matcher.value_match(value, arg, single=True)
-            return match is not None
-        elif type(re.compile('.')).__name__ == 'SRE_Pattern':
-            return arg.match(value) is not None
-
-        raise ValueError("Unexpected argument type")
-
-    def execute(self, fragment):
-        results = []
-
-        for name, method, argument in self.comparisons:
-            if not hasattr(fragment, name):
-                continue
-            value = getattr(fragment, name)
-
-            results.append(method(value, argument))
-
-        return all(results) if len(results) > 0 else False
-
-    def __repr__(self):
-        return "CaptureConstraint(comparisons=%s)" % repr(self.comparisons)
-
-
-class CaptureGroup(object):
-    def __init__(self, parser):
-        """Capture group object
-
-        :type parser: Parser
-        """
-
-        self.parser = parser
-
-        #: @type: list of CaptureStep
-        self.steps = []
-        #: @type: list of CaptureConstraint
-        self.constraints = []
-
-    def capture(self, tag, regex=None, func=None, single=True):
-        Logr.debug('capture("%s", "%s", %s, %s)', tag, regex, func, single)
-
-        self.steps.append(CaptureStep(
-            self, tag,
+    def capture_closure(self, tag, regex=None, func=None, single=True):
+        return CaptureGroup(self).capture_closure(
+            tag,
             regex=regex,
             func=func,
             single=single
-        ))
-
-        return self
-
-    def until(self, **kwargs):
-        self.constraints.append(CaptureConstraint(self, **kwargs))
-
-        return self
-
-    def execute(self, once=False):
-        while self.parser.fragment_available():
-            # Run through the constraints and break on any matches
-            for constraint in self.constraints:
-                fragment = self.parser.next_fragment()
-
-                if constraint.execute(fragment):
-                    Logr.debug('capturing broke on "%s" at %s', fragment.value, constraint)
-                    self.parser.rewind()
-                    return
-                else:
-                    self.parser.rewind()
-
-            # Run through the steps
-            complete = []
-            for step in self.steps:
-                if step.execute(self.parser):
-                    pass
-                complete.append(step.is_complete())
-
-            # Break if all the steps are complete
-            if all(complete):
-                Logr.debug('all steps complete, breaking')
-                return
-            elif once:
-                self.parser.rewind()
-                return
+        )

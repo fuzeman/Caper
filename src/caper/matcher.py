@@ -48,6 +48,10 @@ class FragmentMatcher(object):
                 self.regex[group_name].append(result)
 
     def parser_match(self, parser, group_name, single=True):
+        """
+
+        :type parser: caper.parsers.base.Parser
+        """
         result = None
 
         for group, patterns in self.regex.items():
@@ -67,8 +71,11 @@ class FragmentMatcher(object):
                     fragment = parser.next_fragment()
                     fragments.append(fragment)
 
+                    Logr.debug('[r"%s"].match("%s")', fragment_pattern.pattern, fragment.value)
                     match = fragment_pattern.match(fragment.value)
-                    if not match:
+                    if match:
+                        Logr.debug('Pattern "%s" matched', fragment_pattern.pattern)
+                    else:
                         pattern_matched = False
                         break
 
@@ -84,15 +91,12 @@ class FragmentMatcher(object):
                     Logr.debug('Matched on <%s>', ' '.join([f.value for f in fragments]))
 
                     result[group].update(pattern_result)
+                    parser.commit()
 
                     if single:
                         return result
                 else:
-                    parser.rewind(len(fragments))
-
-        # Skip over the fragment if we couldn't find a result
-        if not result and parser.fragment_available():
-            parser.next_fragment()
+                    parser.rewind()
 
     def value_match(self, value, group_name=None, single=True):
         result = None

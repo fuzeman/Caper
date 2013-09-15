@@ -14,6 +14,7 @@
 
 import logging
 import os
+import pprint
 from logr import Logr
 from caper import Caper
 
@@ -52,7 +53,7 @@ class CaperTests(object):
 
         print "loaded %s names for testing" % len(self.test_names)
 
-    def run(self):
+    def run(self, parser_type):
         max_num_length = len(str(len(self.test_names)))
         row_format = '[%%0%dd] %%s' % max_num_length
 
@@ -68,28 +69,45 @@ class CaperTests(object):
 
             print row_format % (i + 1, name)
 
-            result = self.caper.parse(name)
+            result = self.caper.parse(name, parser_type)
+            pprint.pprint(result._info)
 
             print "Press ENTER to continue testing"
             raw_input()
 
 
+def raw_input_default(message, default=None):
+    value = raw_input(message)
+    if value == '':
+        value = default
+
+    return value
+
+
 if __name__ == '__main__':
-    Logr.configure(logging.INFO)
     tests = CaperTests()
 
-    test_file = ''
-    while test_file == '':
-        test_file = raw_input('Test file [scene.csv]: ')
+    parser_type = raw_input_default('Parser type (scene, anime) [scene]: ', 'scene')
 
-        if test_file == '':
-            test_file = 'scene.csv'
+    test_file = ''
+    test_file_default = 'scene.csv'
+    if os.path.isfile(parser_type + '.csv'):
+        test_file_default = parser_type + '.csv'
+
+    while test_file == '':
+        test_file = raw_input_default('Test file [%s]: ' % test_file_default, test_file_default)
 
         if not os.path.isfile(test_file):
             test_file = ''
             print "ERROR: Test file does not exist"
             print
 
+    logging_mode = raw_input_default('Logging mode (debug, info) [info]: ', 'info')
+    if logging_mode == 'debug':
+        Logr.configure(logging.DEBUG)
+    else:
+        Logr.configure(logging.INFO)
+
     tests.load(test_file, 100)
 
-    tests.run()
+    tests.run(parser_type)
