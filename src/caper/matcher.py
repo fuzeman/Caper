@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pprint
 
 import re
 from logr import Logr
@@ -25,27 +26,38 @@ class FragmentMatcher(object):
             if group_name not in self.regex:
                 self.regex[group_name] = []
 
-            for pattern in patterns:
-                if type(pattern) is str:
-                    pattern = (pattern,)
+            # Transform into weight groups
+            if type(patterns[0]) is str or type(patterns[0][0]) not in [int, float]:
+                patterns = [(1.0, patterns)]
 
-                if type(pattern) is tuple and len(pattern) == 2:
-                    if is_list_type(pattern[1], str):
+            for weight, patterns in patterns:
+                weight_patterns = []
+
+                for pattern in patterns:
+                    # Transform into multi-fragment patterns
+                    if type(pattern) is str:
                         pattern = (pattern,)
 
-                result = []
-                for value in pattern:
-                    if type(value) is tuple:
-                        if len(value) == 2:
-                            value = value[0] % '|'.join(value[1])
-                        elif len(value) == 1:
-                            value = value[0]
+                    if type(pattern) is tuple and len(pattern) == 2:
+                        if type(pattern[0]) is str and is_list_type(pattern[1], str):
+                            pattern = (pattern,)
 
-                    result.append(re.compile(value, re.IGNORECASE))
+                    result = []
+                    for value in pattern:
+                        if type(value) is tuple:
+                            if len(value) == 2:
+                                # Construct OR-list pattern
+                                value = value[0] % '|'.join(value[1])
+                            elif len(value) == 1:
+                                value = value[0]
 
-                result = tuple(result)
+                        result.append(re.compile(value, re.IGNORECASE))
 
-                self.regex[group_name].append(result)
+                    weight_patterns.append(tuple(result))
+
+                self.regex[group_name].append((weight, weight_patterns))
+
+        pprint.pprint(self.regex)
 
     def parser_match(self, parser, group_name, single=True):
         """
@@ -54,9 +66,12 @@ class FragmentMatcher(object):
         """
         result = None
 
-        for group, patterns in self.regex.items():
+        for group, weight_groups in self.regex.items():
             if group_name and group != group_name:
                 continue
+
+            # TODO handle multiple weights
+            weight, patterns = weight_groups[0]
 
             for pattern in patterns:
                 fragments = []
@@ -103,9 +118,12 @@ class FragmentMatcher(object):
     def value_match(self, value, group_name=None, single=True):
         result = None
 
-        for group, patterns in self.regex.items():
+        for group, weight_groups in self.regex.items():
             if group_name and group != group_name:
                 continue
+
+            # TODO handle multiple weights
+            weight, patterns = weight_groups[0]
 
             for pattern in patterns:
                 match = pattern[0].match(value)
