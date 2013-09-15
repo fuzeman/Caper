@@ -16,6 +16,7 @@ import logging
 import os
 import pprint
 from logr import Logr
+import sys
 from caper import Caper
 
 
@@ -36,7 +37,7 @@ class CaperTests(object):
         if self.name_col is None:
             raise Exception()
 
-    def load(self, filename, limit=100):
+    def load(self, filename, limit = 100):
         if not os.path.isfile(filename):
             raise Exception()
 
@@ -53,11 +54,11 @@ class CaperTests(object):
 
         print "loaded %s names for testing" % len(self.test_names)
 
-    def run(self, parser_type):
+    def run(self, parser_type, arguments):
         max_num_length = len(str(len(self.test_names)))
         row_format = '[%%0%dd] %%s' % max_num_length
 
-        start = raw_input('Start position: ')
+        start = arguments['start'] or raw_input('Start position: ')
         if start.strip() != '':
             start = int(start)
         else:
@@ -76,7 +77,7 @@ class CaperTests(object):
             raw_input()
 
 
-def raw_input_default(message, default=None):
+def raw_input_default(message, default = None):
     value = raw_input(message)
     if value == '':
         value = default
@@ -84,10 +85,26 @@ def raw_input_default(message, default=None):
     return value
 
 
+def get_argument(n):
+    return sys.argv[n] if len(sys.argv) > n else None
+
+
+def parse_arguments():
+    return {
+        'parser_type': get_argument(1),
+        'test_file': get_argument(2),
+        'logging_mode': get_argument(3),
+        'start': get_argument(4)
+    }
+
+
 if __name__ == '__main__':
+    arguments = parse_arguments()
+
     tests = CaperTests()
 
-    parser_type = raw_input_default('Parser type (scene, anime) [scene]: ', 'scene')
+    parser_type = arguments['parser_type'] or \
+        raw_input_default('Parser type (scene, anime) [scene]: ', 'scene')
 
     test_file = ''
     test_file_default = 'scene.csv'
@@ -95,14 +112,17 @@ if __name__ == '__main__':
         test_file_default = parser_type + '.csv'
 
     while test_file == '':
-        test_file = raw_input_default('Test file [%s]: ' % test_file_default, test_file_default)
+        test_file = arguments['test_file'] or \
+            raw_input_default('Test file [%s]: ' % test_file_default, test_file_default)
 
         if not os.path.isfile(test_file):
             test_file = ''
             print "ERROR: Test file does not exist"
             print
 
-    logging_mode = raw_input_default('Logging mode (debug, info) [info]: ', 'info')
+    logging_mode = arguments['logging_mode'] or \
+        raw_input_default('Logging mode (debug, info) [info]: ', 'info')
+
     if logging_mode == 'debug':
         Logr.configure(logging.DEBUG)
     else:
@@ -110,4 +130,4 @@ if __name__ == '__main__':
 
     tests.load(test_file, 100)
 
-    tests.run(parser_type)
+    tests.run(parser_type, arguments)
