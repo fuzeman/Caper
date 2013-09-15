@@ -14,7 +14,7 @@
 
 import re
 from logr import Logr
-from caper.helpers import is_list_type
+from caper.helpers import is_list_type, clean_dict
 
 
 class FragmentMatcher(object):
@@ -79,7 +79,7 @@ class FragmentMatcher(object):
                         pattern_matched = False
                         break
 
-                    pattern_result.update(match.groupdict())
+                    pattern_result.update(clean_dict(match.groupdict()))
 
                 if pattern_matched:
                     if result is None:
@@ -97,6 +97,8 @@ class FragmentMatcher(object):
                         return result
                 else:
                     parser.rewind()
+
+        return result
 
     def value_match(self, value, group_name=None, single=True):
         result = None

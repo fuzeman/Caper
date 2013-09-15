@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
+GROUP_MATCHES = ['identifier']
+
+
 class CaperResult(object):
     def __init__(self):
         self._info = {}
@@ -22,7 +25,7 @@ class CaperResult(object):
             root = self._info
 
         for key in match:
-            if type(match[key]) is dict:
+            if type(match[key]) is dict and key not in GROUP_MATCHES:
                 if key not in root:
                     root[key] = {}
 
