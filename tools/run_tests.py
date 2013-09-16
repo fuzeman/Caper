@@ -77,7 +77,7 @@ class CaperTests(object):
             raw_input()
 
 
-def raw_input_default(message, default = None):
+def raw_input_default(message, default=None):
     value = raw_input(message)
     if value == '':
         value = default

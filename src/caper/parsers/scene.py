@@ -52,9 +52,14 @@ PATTERN_GROUPS = [
             # Part.1.and.Part.3
             ('^Part$', '(?P<part>\d+)'),
         ]),
+        (0.8, [
+            # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years my mistake)
+            # TODO - Update this pattern on 31 Dec 2099
+            r'^(?P<season>([1-9])|(1[0-8])|(2[1-9])|([3-9][0-9]))(?P<episode>\d{2})$'
+        ]),
         (0.5, [
-            # 102
-            r'^(?P<season>\d{1,2})(?P<episode>\d{2})$'
+            # 100 - 9999
+            r'^(?P<season>([1-9])|([1-9][0-9]))(?P<episode>\d{2})$'
         ])
     ]),
     ('video', [
@@ -98,8 +103,8 @@ class SceneParser(Parser):
         super(SceneParser, self).run(closures)
 
         self.capture_fragment('show_name', single=False)\
-            .until(value__re='identifier')\
-            .until(value__re='video')\
+            .until(fragment__re=('identifier', 0.6))\
+            .until(fragment__re='video')\
             .execute()
 
         self.capture_fragment('identifier', regex='identifier', single=False)\

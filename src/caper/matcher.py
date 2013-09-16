@@ -59,6 +59,13 @@ class FragmentMatcher(object):
 
         pprint.pprint(self.regex)
 
+    def find_group(self, name):
+        for group_name, weight_groups in self.regex.items():
+            if group_name and group_name == name:
+                return group_name, weight_groups
+
+        return None
+
     def parser_match(self, parser, group_name, single=True):
         """
 
@@ -141,3 +148,43 @@ class FragmentMatcher(object):
                     return result
 
         return result
+
+    def fragment_match(self, fragment, group_name=None):
+        """Follow a fragment chain to try find a match
+
+        :type fragment: caper.objects.CaperFragment
+        :type group_name: str or None
+
+        :return: The weight of the match found between 0.0 and 1.0,
+                  where 1.0 means perfect match and 0.0 means no match
+        :rtype: float
+        """
+
+        group_name, weight_groups = self.find_group(group_name)
+
+        for weight, patterns in weight_groups:
+            for pattern in patterns:
+                cur_fragment = fragment
+                success = True
+
+                # Ignore empty patterns
+                if len(pattern) < 1:
+                    break
+
+                for fragment_pattern in pattern:
+                    if not cur_fragment:
+                        success = False
+                        break
+
+                    match = fragment_pattern.match(cur_fragment.value)
+                    if not match:
+                        success = False
+                        break
+
+                    cur_fragment = cur_fragment.right if cur_fragment else None
+
+                if success:
+                    Logr.debug("Found match with weight %s" % weight)
+                    return float(weight)
+
+        return 0.0
