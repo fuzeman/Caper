@@ -166,6 +166,7 @@ class FragmentMatcher(object):
             for pattern in patterns:
                 cur_fragment = fragment
                 success = True
+                result = {}
 
                 # Ignore empty patterns
                 if len(pattern) < 1:
@@ -177,7 +178,9 @@ class FragmentMatcher(object):
                         break
 
                     match = fragment_pattern.match(cur_fragment.value)
-                    if not match:
+                    if match:
+                        result.update(match.groupdict())
+                    else:
                         success = False
                         break
 
@@ -185,6 +188,6 @@ class FragmentMatcher(object):
 
                 if success:
                     Logr.debug("Found match with weight %s" % weight)
-                    return float(weight)
+                    return float(weight), result
 
-        return 0.0
+        return 0.0, None

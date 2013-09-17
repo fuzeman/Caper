@@ -16,12 +16,16 @@ import re
 from logr import Logr
 from caper import FragmentMatcher
 from caper.group import CaptureGroup
-from caper.result import CaperResult
+from caper.result import CaperResult, CaperClosureNode
 
 
 class Parser(object):
     def __init__(self, pattern_groups):
         self.matcher = FragmentMatcher(pattern_groups)
+
+        #: :type: caper.result.CaperResult
+        self.result = None
+
         self.reset()
 
     def reset(self):
@@ -36,6 +40,8 @@ class Parser(object):
     def run(self, closures):
         self.reset()
         self.closures = closures
+
+        self.result.heads = [CaperClosureNode(closures[0])]
 
     #
     # Closure Methods
@@ -98,7 +104,7 @@ class Parser(object):
     #
 
     def capture_fragment(self, tag, regex=None, func=None, single=True):
-        return CaptureGroup(self).capture_fragment(
+        return CaptureGroup(self, self.result).capture_fragment(
             tag,
             regex=regex,
             func=func,
@@ -106,7 +112,7 @@ class Parser(object):
         )
 
     def capture_closure(self, tag, regex=None, func=None, single=True):
-        return CaptureGroup(self).capture_closure(
+        return CaptureGroup(self, self.result).capture_closure(
             tag,
             regex=regex,
             func=func,

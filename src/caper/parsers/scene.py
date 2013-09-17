@@ -14,6 +14,7 @@
 
 import pprint
 from caper.parsers.base import Parser
+from caper.result import CaperFragmentNode
 
 
 PATTERN_GROUPS = [
@@ -103,7 +104,7 @@ class SceneParser(Parser):
         super(SceneParser, self).run(closures)
 
         self.capture_fragment('show_name', single=False)\
-            .until(fragment__re=('identifier', 0.6))\
+            .until(fragment__re='identifier')\
             .until(fragment__re='video')\
             .execute()
 
@@ -115,4 +116,14 @@ class SceneParser(Parser):
         self.capture_fragment('group', func=self.capture_group)\
             .execute()
 
+        self.print_tree(self.result.heads)
+
         return self.result
+
+    def print_tree(self, heads):
+        for head in heads:
+            value = head.fragment.value if isinstance(head, CaperFragmentNode) else head.closure.value
+            print str(head).ljust(55), '\t', value.ljust(90), '\t', head.weight, '\t', head.match
+
+            if head.parent:
+                self.print_tree([head.parent])

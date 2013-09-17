@@ -48,7 +48,13 @@ class Caper(object):
             if len(buf) < 1:
                 return
 
-            closures.append(CaperClosure(buf))
+            cur = CaperClosure(buf)
+            cur.left = closures[len(closures) - 1] if len(closures) > 0 else None
+
+            if cur.left:
+                cur.left.right = cur
+
+            closures.append(cur)
 
         state = CL_START
         buf = ""

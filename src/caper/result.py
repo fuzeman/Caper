@@ -16,56 +16,74 @@
 GROUP_MATCHES = ['identifier']
 
 
+class CaperNode(object):
+    def __init__(self, closure, parent=None, weight=None, match=None):
+        """
+        :type parent: CaperNode
+        :type weight: float
+        """
+
+        #: :type: caper.objects.CaperClosure
+        self.closure = closure
+        #: :type: CaperNode
+        self.parent = parent
+        #: :type: float
+        self.weight = weight
+        #: :type: dict
+        self.match = match
+        #: :type: list of CaptureGroup
+        self.finished_groups = []
+
+    def next(self):
+        raise NotImplementedError()
+
+
+class CaperClosureNode(CaperNode):
+    def __init__(self, closure, parent=None, weight=None, match=None):
+        """
+        :type closure: caper.objects.CaperClosure or list of caper.objects.CaperClosure
+        """
+        super(CaperClosureNode, self).__init__(closure, parent, weight, match)
+
+    def next(self):
+        if self.closure and len(self.closure.fragments) > 0:
+            return self.closure.fragments[0]
+        return None
+
+
+class CaperFragmentNode(CaperNode):
+    def __init__(self, closure, fragment, parent=None, weight=None, match=None):
+        """
+        :type fragment: caper.objects.CaperFragment or list of caper.objects.CaperFragment
+        """
+        super(CaperFragmentNode, self).__init__(closure, parent, weight, match)
+
+        #: :type: caper.objects.CaperFragment or list of caper.objects.CaperFragment
+        self.fragment = fragment
+
+    def next(self):
+        if self.fragment.right:
+            return self.fragment.right
+
+        if self.closure.right:
+            return self.closure.right
+
+        return None
+
+
+
 class CaperResult(object):
     def __init__(self):
+        #: :type: list of CaperNode
+        self.heads = []
         self._info = {}
 
     def update(self, match, root=None):
-        if root is None:
-            root = self._info
-
-        for key in match:
-            if type(match[key]) is dict and key not in GROUP_MATCHES:
-                if key not in root:
-                    root[key] = {}
-
-                self.update(match[key], root[key])
-            else:
-                if match[key]:
-                    if key not in root:
-                        root[key] = []
-
-                    root[key].append(match[key])
+        print "update", match
 
     def has_any(self, keys, root=None):
-        if root is None:
-            root = self._info
-
-        if not root:
-            return False
-
-        if type(keys) != list:
-            keys = [keys]
-
-        for key in keys:
-            key = key.split('.')
-            head = key[0]
-
-            if head in root:
-                # If the key is single length we are finished
-                if len(key) == 1:
-                    return True
-
-                # Traverse further into the dictionary
-                if len(key) > 1:
-                    key.pop(0)
-                    if self.has_any(key, root[head]):
-                        return True
-
-        return False
+        print "has_any", keys
 
     def valid(self):
-        if 'identifier' in self._info and 'show_name' in self._info:
-            return True
-
+        print "valid"
         return False

@@ -31,37 +31,25 @@ class CaptureStep(object):
 
         raise NotImplementedError()
 
-    def execute(self, parser):
+    def execute(self, fragment):
         if self.is_complete():
             return
 
-        subject = None
-        if not self.regex:
-            subject = self._get_next_subject(parser)
-            if subject is None:
-                return
-
         if self.regex:
-            match = self.capture_group.parser.matcher.parser_match(parser, self.regex)
+            weight, match = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
             Logr.debug('(execute) [regex] tag: "%s"', self.tag)
             if match:
-                self.match_found(match)
-                parser.commit()
-                return True
+                return True, weight, match
         elif self.func:
-            match = self.func(subject)
+            match = self.func(fragment)
             Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
             if match:
-                self.match_found({self.tag: match})
-                parser.commit()
-                return True
+                return True, 1.0, {self.tag: match}
         else:
-            Logr.debug('(execute) [raw] %s += "%s"', self.tag, subject.value)
-            self.match_found({self.tag: subject.value})
-            parser.commit()
-            return True
+            Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
+            return True, 1.0, {self.tag: fragment.value}
 
-        return False
+        return False, 0.0, None
 
     def is_complete(self):
         return self.single and self.capture_group.parser.result.has_any(self.tag)
