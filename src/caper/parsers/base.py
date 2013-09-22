@@ -23,8 +23,14 @@ class Parser(object):
     def __init__(self, pattern_groups):
         self.matcher = FragmentMatcher(pattern_groups)
 
+        self.closures = None
         #: :type: caper.result.CaperResult
         self.result = None
+
+        self._match_cache = None
+        self._fragment_pos = None
+        self._closure_pos = None
+        self._history = None
 
         self.reset()
 
@@ -37,11 +43,22 @@ class Parser(object):
         self._closure_pos = -1
         self._history = []
 
-    def run(self, closures):
+    def setup(self, closures):
+        """
+        :type closures: list of CaperClosure
+        """
+
         self.reset()
         self.closures = closures
 
         self.result.heads = [CaperClosureNode(closures[0])]
+
+    def run(self, closures):
+        """
+        :type closures: list of CaperClosure
+        """
+
+        raise NotImplementedError()
 
     #
     # Closure Methods

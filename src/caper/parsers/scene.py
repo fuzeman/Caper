@@ -101,7 +101,11 @@ class SceneParser(Parser):
         return None
 
     def run(self, closures):
-        super(SceneParser, self).run(closures)
+        """
+        :type closures: list of CaperClosure
+        """
+
+        self.setup(closures)
 
         self.capture_fragment('show_name', single=False)\
             .until(fragment__re='identifier')\
@@ -118,6 +122,7 @@ class SceneParser(Parser):
 
         self.print_tree(self.result.heads)
 
+        self.result.build()
         return self.result
 
     def print_tree(self, heads):

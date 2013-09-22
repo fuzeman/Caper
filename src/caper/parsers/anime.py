@@ -67,7 +67,11 @@ class AnimeParser(Parser):
         return match.group('group')
 
     def run(self, closures):
-        super(AnimeParser, self).run(closures)
+        """
+        :type closures: list of CaperClosure
+        """
+
+        self.setup(closures)
 
         self.capture_closure('group', func=self.capture_group)\
             .execute(once=True)
@@ -82,4 +86,5 @@ class AnimeParser(Parser):
             .capture_fragment('audio', regex='audio', single=False) \
             .execute()
 
+        self.result.build()
         return self.result

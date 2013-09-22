@@ -41,6 +41,12 @@ class Caper(object):
         }
 
     def _closure_split(self, name):
+        """
+        :type name: str
+
+        :rtype: list of CaperClosure
+        """
+
         closures = []
 
         def end_closure(closures, buf):
@@ -78,9 +84,21 @@ class Caper(object):
         return closures
 
     def _clean_closure(self, closure):
+        """
+        :type closure: str
+
+        :rtype: str
+        """
+
         return closure.lstrip(STRIP_START_CHARS).rstrip(STRIP_END_CHARS)
 
     def _fragment_split(self, closures):
+        """
+        :type closures: list of CaperClosure
+
+        :rtype: list of CaperClosure
+        """
+
         cur_position = 0
         cur = CaperFragment()
 

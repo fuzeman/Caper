@@ -72,15 +72,16 @@ class CaptureGroup(object):
                     Logr.debug('Branching result')
 
         # Try match subject against the steps available
-        success, weight, match = (None, None, None)
+        tag, success, weight, match = (None, None, None, None)
         for step in self.steps:
+            tag = step.tag
             success, weight, match = step.execute(subject)
             if success:
                 Logr.debug('Found match with weight %s, match: %s' % (weight, match))
                 break
 
         Logr.debug('created fragment node with subject.value: "%s"' % subject.value)
-        result_nodes.append(CaperFragmentNode(parent_node.closure, subject, parent_node, weight, match))
+        result_nodes.append(CaperFragmentNode(parent_node.closure, subject, parent_node, tag, weight, match))
 
         return result_nodes
 
@@ -96,7 +97,7 @@ class CaptureGroup(object):
             for head_node in heads:
                 Logr.debug("head: %s" % head_node)
                 if self in head_node.finished_groups:
-                    print "===========head finished for group================"
+                    Logr.debug("head finished for group")
                     self.result.heads.append(head_node)
                     heads_finished.append(True)
                     continue
@@ -114,4 +115,4 @@ class CaptureGroup(object):
 
             Logr.debug("heads_finished: %s, self.result.heads: %s", heads_finished, self.result.heads)
 
-        Logr.info("=============group finished===================")
+        Logr.debug("group finished")
