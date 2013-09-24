@@ -11,61 +11,148 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
+
+from operator import itemgetter
+from logr import Logr
 
 
 GROUP_MATCHES = ['identifier']
 
 
+class CaperNode(object):
+    def __init__(self, closure, parent=None, tag=None, weight=None, match=None):
+        """
+        :type parent: CaperNode
+        :type weight: float
+        """
+
+        #: :type: caper.objects.CaperClosure
+        self.closure = closure
+        #: :type: CaperNode
+        self.parent = parent
+        #: :type: str
+        self.tag = tag
+        #: :type: float
+        self.weight = weight
+        #: :type: dict
+        self.match = match
+        #: :type: list of CaptureGroup
+        self.finished_groups = []
+
+    def next(self):
+        raise NotImplementedError()
+
+
+class CaperClosureNode(CaperNode):
+    def __init__(self, closure, parent=None, tag=None, weight=None, match=None):
+        """
+        :type closure: caper.objects.CaperClosure or list of caper.objects.CaperClosure
+        """
+        super(CaperClosureNode, self).__init__(closure, parent, tag, weight, match)
+
+    def next(self):
+        if self.closure and len(self.closure.fragments) > 0:
+            return self.closure.fragments[0]
+        return None
+
+
+class CaperFragmentNode(CaperNode):
+    def __init__(self, closure, fragments, parent=None, tag=None, weight=None, match=None):
+        """
+        :type fragment: caper.objects.CaperFragment or list of caper.objects.CaperFragment
+        """
+        super(CaperFragmentNode, self).__init__(closure, parent, tag, weight, match)
+
+        #: :type: caper.objects.CaperFragment or list of caper.objects.CaperFragment
+        self.fragments = fragments
+
+    def next(self):
+        if len(self.fragments) > 0 and self.fragments[-1] and self.fragments[-1].right:
+            return self.fragments[-1].right
+
+        if self.closure.right:
+            return self.closure.right
+
+        return None
+
+
 class CaperResult(object):
     def __init__(self):
-        self._info = {}
+        #: :type: list of CaperNode
+        self.heads = []
 
-    def update(self, match, root=None):
-        if root is None:
-            root = self._info
+        self.chains = []
 
-        for key in match:
-            if type(match[key]) is dict and key not in GROUP_MATCHES:
-                if key not in root:
-                    root[key] = {}
+    def build(self):
+        for head in self.heads:
+            for chain in self.combine_chain(head):
+                chain.finish()
 
-                self.update(match[key], root[key])
-            else:
-                if match[key]:
-                    if key not in root:
-                        root[key] = []
+                self.chains.append((chain.weight, chain))
 
-                    root[key].append(match[key])
+        self.chains.sort(key=itemgetter(0), reverse=True)
 
-    def has_any(self, keys, root=None):
-        if root is None:
-            root = self._info
+        for weight, chain in self.chains:
+            Logr.debug("chain %s %s", weight, chain.info)
 
-        if not root:
-            return False
+    def combine_chain(self, subject, chain=None):
+        nodes = subject if type(subject) is list else [subject]
 
-        if type(keys) != list:
-            keys = [keys]
+        if chain is None:
+            chain = CaperResultChain()
 
-        for key in keys:
-            key = key.split('.')
-            head = key[0]
+        result = []
 
-            if head in root:
-                # If the key is single length we are finished
-                if len(key) == 1:
-                    return True
+        for x, node in enumerate(nodes):
+            node_chain = chain if x == len(nodes) - 1 else chain.copy()
 
-                # Traverse further into the dictionary
-                if len(key) > 1:
-                    key.pop(0)
-                    if self.has_any(key, root[head]):
-                        return True
+            if not node.parent:
+                result.append(node_chain)
+                continue
 
-        return False
+            # Skip over closure nodes
+            if type(node) is CaperClosureNode:
+                result.extend(self.combine_chain(node.parent, node_chain))
 
-    def valid(self):
-        if 'identifier' in self._info and 'show_name' in self._info:
-            return True
+            # Parse fragment matches
+            if type(node) is CaperFragmentNode:
+                node_chain.update(node)
 
-        return False
+                result.extend(self.combine_chain(node.parent, node_chain))
+
+        return result
+
+
+class CaperResultChain(object):
+    def __init__(self):
+        #: :type: float
+        self.weight = None
+        self.info = {}
+
+        self._weights = []
+
+    def update(self, subject):
+        if subject.weight is None:
+            return
+
+        self._weights.append(subject.weight)
+
+        if subject.match:
+            if subject.tag not in self.info:
+                self.info[subject.tag] = []
+
+            self.info[subject.tag].insert(0, subject.match)
+
+    def finish(self):
+        self.weight = sum(self._weights) / len(self._weights)
+
+    def copy(self):
+        chain = CaperResultChain()
+
+        chain.weight = self.weight
+        chain.info = copy.deepcopy(self.info)
+
+        chain._weights = copy.copy(self._weights)
+
+        return chain

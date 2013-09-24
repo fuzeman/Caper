@@ -21,6 +21,6 @@ def clean_dict(target, remove=None):
             if target[key] == remove:
                 target.pop(key)
         else:
-            clean_dict_items(target[key], remove)
+            clean_dict(target[key], remove)
 
     return target
