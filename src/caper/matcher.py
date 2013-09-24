@@ -157,7 +157,7 @@ class FragmentMatcher(object):
 
         :return: The weight of the match found between 0.0 and 1.0,
                   where 1.0 means perfect match and 0.0 means no match
-        :rtype: (float, dict)
+        :rtype: (float, dict, int)
         """
 
         group_name, weight_groups = self.find_group(group_name)
@@ -188,6 +188,6 @@ class FragmentMatcher(object):
 
                 if success:
                     Logr.debug("Found match with weight %s" % weight)
-                    return float(weight), result
+                    return float(weight), result, len(pattern)
 
-        return 0.0, None
+        return 0.0, None, 1

@@ -130,8 +130,11 @@ class SceneParser(Parser):
         for head in heads:
             head = head if type(head) is list else [head]
 
-            value = head[0].fragment.value if isinstance(head[0], CaperFragmentNode) else head[0].closure.value
-            Logr.debug(value)
+            if type(head[0]) is CaperFragmentNode:
+                for fragment in head[0].fragments:
+                    Logr.debug(fragment.value)
+            else:
+                Logr.debug(head[0].closure.value)
 
             for node in head:
                 Logr.debug('\t' + str(node).ljust(55) + '\t' + str(node.weight) + '\t' + str(node.match))

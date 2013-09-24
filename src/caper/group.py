@@ -75,21 +75,24 @@ class CaptureGroup(object):
                     Logr.debug('Branching result')
 
         # Try match subject against the steps available
-        tag, success, weight, match = (None, None, None, None)
+        tag, success, weight, match, num_fragments = (None, None, None, None, None)
         for step in self.steps:
             tag = step.tag
-            success, weight, match = step.execute(subject)
+            success, weight, match, num_fragments = step.execute(subject)
             if success:
                 match = clean_dict(match) if type(match) is dict else match
-                Logr.debug('Found match with weight %s, match: %s' % (weight, match))
+                Logr.debug('Found match with weight %s, match: %s, num_fragments: %s' % (weight, match, num_fragments))
                 break
 
         Logr.debug('created fragment node with subject.value: "%s"' % subject.value)
 
-        result = [CaperFragmentNode(parent_node.closure, subject, parent_head, tag, weight, match)]
+        result = [CaperFragmentNode(parent_node.closure, subject.take_right(num_fragments), parent_head, tag, weight, match)]
 
         if match and weight < 1.0:
-            result.append(CaperFragmentNode(parent_node.closure, subject, parent_head, None, 0.0, None))
+            if num_fragments == 1:
+                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, 0.0, None))
+            else:
+                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, 0.0, None))
 
         nodes.append(result[0] if len(result) == 1 else result)
 

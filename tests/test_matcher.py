@@ -1,21 +1,5 @@
 from caper import FragmentMatcher, CaperFragment
-
-
-def create_fragments(value):
-    fragment_values = value.split('.')
-    fragments = []
-
-    for x in xrange(len(fragment_values)):
-        fragment = CaperFragment()
-        fragment.value = fragment_values[x]
-
-        if x > 0:
-            fragment.left = fragments[x - 1]
-            fragments[x - 1].right = fragment
-
-        fragments.append(fragment)
-
-    return fragments
+from helpers import create_fragments
 
 
 def test_fragment_match():

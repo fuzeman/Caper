@@ -58,18 +58,18 @@ class CaperClosureNode(CaperNode):
 
 
 class CaperFragmentNode(CaperNode):
-    def __init__(self, closure, fragment, parent=None, tag=None, weight=None, match=None):
+    def __init__(self, closure, fragments, parent=None, tag=None, weight=None, match=None):
         """
         :type fragment: caper.objects.CaperFragment or list of caper.objects.CaperFragment
         """
         super(CaperFragmentNode, self).__init__(closure, parent, tag, weight, match)
 
         #: :type: caper.objects.CaperFragment or list of caper.objects.CaperFragment
-        self.fragment = fragment
+        self.fragments = fragments
 
     def next(self):
-        if self.fragment.right:
-            return self.fragment.right
+        if len(self.fragments) > 0 and self.fragments[-1] and self.fragments[-1].right:
+            return self.fragments[-1].right
 
         if self.closure.right:
             return self.closure.right

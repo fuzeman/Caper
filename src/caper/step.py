@@ -33,20 +33,20 @@ class CaptureStep(object):
 
     def execute(self, fragment):
         if self.regex:
-            weight, match = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
+            weight, match, num_fragments = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
             Logr.debug('(execute) [regex] tag: "%s"', self.tag)
             if match:
-                return True, weight, match
+                return True, weight, match, num_fragments
         elif self.func:
             match = self.func(fragment)
             Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
             if match:
-                return True, 1.0, match
+                return True, 1.0, match, 1
         else:
             Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
-            return True, 1.0, fragment.value
+            return True, 1.0, fragment.value, 1
 
-        return False, None, None
+        return False, None, None, 1
 
     def __repr__(self):
         attribute_values = [key + '=' + repr(getattr(self, key))

@@ -34,7 +34,7 @@ class CaptureConstraint(object):
         if name == 'fragment':
             group, minimum_weight = arg if type(arg) is tuple and len(arg) > 1 else (arg, 0)
 
-            weight, match = self.capture_group.parser.matcher.fragment_match(fragment, group)
+            weight, match, num_fragments = self.capture_group.parser.matcher.fragment_match(fragment, group)
             return weight, weight > minimum_weight
         elif type(arg).__name__ == 'SRE_Pattern':
             return 1.0, arg.match(getattr(fragment, name)) is not None
