@@ -127,8 +127,13 @@ class SceneParser(Parser):
 
     def print_tree(self, heads):
         for head in heads:
-            value = head.fragment.value if isinstance(head, CaperFragmentNode) else head.closure.value
-            print str(head).ljust(55), '\t', value.ljust(90), '\t', head.weight, '\t', head.match
+            head = head if type(head) is list else [head]
 
-            if head.parent:
-                self.print_tree([head.parent])
+            value = head[0].fragment.value if isinstance(head[0], CaperFragmentNode) else head[0].closure.value
+            print value.ljust(90)
+
+            for node in head:
+                print '\t', str(node).ljust(55), '\t', node.weight, '\t', node.match
+
+            if len(head) > 0 and head[0].parent:
+                self.print_tree([head[0].parent])

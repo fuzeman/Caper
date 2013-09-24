@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
+
 from operator import itemgetter
 
 
@@ -83,29 +85,37 @@ class CaperResult(object):
 
     def build(self):
         for head in self.heads:
-            result = self.combine_chain(head)
-            result.finish()
+            for chain in self.combine_chain(head):
+                chain.finish()
 
-            self.chains.append((result.weight, result))
+                self.chains.append((chain.weight, chain))
 
         self.chains.sort(key=itemgetter(0), reverse=True)
 
-    def combine_chain(self, subject, result=None):
-        if result is None:
-            result = CaperResultChain()
+    def combine_chain(self, subject, chain=None):
+        nodes = subject if type(subject) is list else [subject]
 
-        if not subject.parent:
-            return result
+        if chain is None:
+            chain = CaperResultChain()
 
-        # Skip over closure nodes
-        if type(subject) is CaperClosureNode:
-            self.combine_chain(subject.parent, result)
+        result = []
 
-        # Parse fragment matches
-        if type(subject) is CaperFragmentNode:
-            result.update(subject)
+        for x, node in enumerate(nodes):
+            node_chain = chain if x == len(nodes) - 1 else chain.copy()
 
-            self.combine_chain(subject.parent, result)
+            if not node.parent:
+                result.append(node_chain)
+                continue
+
+            # Skip over closure nodes
+            if type(node) is CaperClosureNode:
+                result.extend(self.combine_chain(node.parent, node_chain))
+
+            # Parse fragment matches
+            if type(node) is CaperFragmentNode:
+                node_chain.update(node)
+
+                result.extend(self.combine_chain(node.parent, node_chain))
 
         return result
 
@@ -114,7 +124,6 @@ class CaperResultChain(object):
     def __init__(self):
         #: :type: float
         self.weight = None
-
         self.info = {}
 
         self._weights = []
@@ -132,3 +141,13 @@ class CaperResultChain(object):
 
     def finish(self):
         self.weight = sum(self._weights) / len(self._weights)
+
+    def copy(self):
+        chain = CaperResultChain()
+
+        chain.weight = self.weight
+        chain.info = copy.deepcopy(self.info)
+
+        chain._weights = copy.copy(self._weights)
+
+        return chain

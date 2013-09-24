@@ -53,10 +53,12 @@ class CaptureGroup(object):
 
         return self
 
-    def parse_subject(self, parent_node, subject):
+    def parse_subject(self, parent_head, subject):
+        parent_node = parent_head[0] if type(parent_head) is list else parent_head
+
         # TODO - if subject is a closure?
 
-        result_nodes = []
+        nodes = []
 
         # Check constraints
         for constraint in self.constraints:
@@ -64,10 +66,10 @@ class CaptureGroup(object):
             if success:
                 Logr.debug('capturing broke on "%s" at %s', subject.value, constraint)
                 parent_node.finished_groups.append(self)
-                result_nodes.append(parent_node)
+                nodes.append(parent_head)
 
                 if weight == 1.0:
-                    return result_nodes
+                    return nodes
                 else:
                     Logr.debug('Branching result')
 
@@ -81,9 +83,14 @@ class CaptureGroup(object):
                 break
 
         Logr.debug('created fragment node with subject.value: "%s"' % subject.value)
-        result_nodes.append(CaperFragmentNode(parent_node.closure, subject, parent_node, tag, weight, match))
+        result = [CaperFragmentNode(parent_node.closure, subject, parent_head, tag, weight, match)]
 
-        return result_nodes
+        if match and weight < 1.0:
+            result.append(CaperFragmentNode(parent_node.closure, subject, parent_head, None, 0.0, None))
+
+        nodes.append(result[0] if len(result) == 1 else result)
+
+        return nodes
 
     def execute(self, once=False):
         heads_finished = None
@@ -94,21 +101,24 @@ class CaptureGroup(object):
             heads = self.result.heads
             self.result.heads = []
 
-            for head_node in heads:
-                Logr.debug("head: %s" % head_node)
-                if self in head_node.finished_groups:
+            for head in heads:
+                node = head[0] if type(head) is list else head
+
+                Logr.debug("head node: %s" % node)
+
+                if self in node.finished_groups:
                     Logr.debug("head finished for group")
-                    self.result.heads.append(head_node)
+                    self.result.heads.append(head)
                     heads_finished.append(True)
                     continue
 
-                next_subject = head_node.next()
+                next_subject = node.next()
 
                 if next_subject:
-                    for node in self.parse_subject(head_node, next_subject):
-                        self.result.heads.append(node)
+                    for node_result in self.parse_subject(head, next_subject):
+                        self.result.heads.append(node_result)
 
-                heads_finished.append(self in head_node.finished_groups or next_subject is None)
+                heads_finished.append(self in node.finished_groups or next_subject is None)
 
             if len(self.result.heads) == 0:
                 self.result.heads = heads
