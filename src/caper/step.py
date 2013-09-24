@@ -46,7 +46,7 @@ class CaptureStep(object):
             Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
             return True, 1.0, fragment.value
 
-        return False, 0.0, None
+        return False, None, None
 
     def __repr__(self):
         attribute_values = [key + '=' + repr(getattr(self, key))

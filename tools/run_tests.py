@@ -71,8 +71,6 @@ class CaperTests(object):
             print row_format % (i + 1, name)
 
             result = self.caper.parse(name, parser_type)
-            for weight, chain in result.chains:
-                print "chain", weight, chain.info
 
             print "Press ENTER to continue testing"
             raw_input()

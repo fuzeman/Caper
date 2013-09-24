@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pprint
+from logr import Logr
 from caper.parsers.base import Parser
 from caper.result import CaperFragmentNode
 
@@ -95,7 +96,7 @@ class SceneParser(Parser):
         super(SceneParser, self).__init__(PATTERN_GROUPS)
 
     def capture_group(self, fragment):
-        if fragment.left_sep == '-':
+        if fragment.left_sep == '-' and not fragment.right:
             return fragment.value
 
         return None
@@ -114,7 +115,7 @@ class SceneParser(Parser):
 
         self.capture_fragment('identifier', regex='identifier', single=False)\
             .capture_fragment('video', regex='video', single=False)\
-            .until(left_sep__eq='-')\
+            .until(left_sep__eq='-', right__eq=None)\
             .execute()
 
         self.capture_fragment('group', func=self.capture_group)\
@@ -130,10 +131,10 @@ class SceneParser(Parser):
             head = head if type(head) is list else [head]
 
             value = head[0].fragment.value if isinstance(head[0], CaperFragmentNode) else head[0].closure.value
-            print value.ljust(90)
+            Logr.debug(value)
 
             for node in head:
-                print '\t', str(node).ljust(55), '\t', node.weight, '\t', node.match
+                Logr.debug('\t' + str(node).ljust(55) + '\t' + str(node.weight) + '\t' + str(node.match))
 
             if len(head) > 0 and head[0].parent:
                 self.print_tree([head[0].parent])

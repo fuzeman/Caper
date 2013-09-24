@@ -14,6 +14,7 @@
 import copy
 
 from operator import itemgetter
+from logr import Logr
 
 
 GROUP_MATCHES = ['identifier']
@@ -92,6 +93,9 @@ class CaperResult(object):
 
         self.chains.sort(key=itemgetter(0), reverse=True)
 
+        for weight, chain in self.chains:
+            Logr.debug("chain %s %s", weight, chain.info)
+
     def combine_chain(self, subject, chain=None):
         nodes = subject if type(subject) is list else [subject]
 
@@ -129,15 +133,16 @@ class CaperResultChain(object):
         self._weights = []
 
     def update(self, subject):
-        if not subject.match:
+        if subject.weight is None:
             return
-
-        if subject.tag not in self.info:
-            self.info[subject.tag] = []
 
         self._weights.append(subject.weight)
 
-        self.info[subject.tag].insert(0, subject.match)
+        if subject.match:
+            if subject.tag not in self.info:
+                self.info[subject.tag] = []
+
+            self.info[subject.tag].insert(0, subject.match)
 
     def finish(self):
         self.weight = sum(self._weights) / len(self._weights)

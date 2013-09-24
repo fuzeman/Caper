@@ -1,6 +1,7 @@
 from logr import Logr
 import math
 from caper import CaperFragment
+from caper.helpers import clean_dict
 from caper.result import CaperClosureNode, CaperFragmentNode
 from caper.step import CaptureStep
 from caper.constraint import CaptureConstraint
@@ -79,10 +80,12 @@ class CaptureGroup(object):
             tag = step.tag
             success, weight, match = step.execute(subject)
             if success:
+                match = clean_dict(match) if type(match) is dict else match
                 Logr.debug('Found match with weight %s, match: %s' % (weight, match))
                 break
 
         Logr.debug('created fragment node with subject.value: "%s"' % subject.value)
+
         result = [CaperFragmentNode(parent_node.closure, subject, parent_head, tag, weight, match)]
 
         if match and weight < 1.0:
