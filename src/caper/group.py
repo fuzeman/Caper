@@ -90,9 +90,9 @@ class CaptureGroup(object):
 
         if match and weight < 1.0:
             if num_fragments == 1:
-                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, 0.0, None))
+                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, None, None))
             else:
-                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, 0.0, None))
+                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, None, None))
 
         nodes.append(result[0] if len(result) == 1 else result)
 
