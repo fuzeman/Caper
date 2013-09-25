@@ -1,5 +1,5 @@
 # Caper
-Extensible Python filename parsing library
+Extensible filename parsing library for Python
 
 ## Development
 

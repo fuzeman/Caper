@@ -25,6 +25,6 @@ setup(
     license='Apache License, Version 2.0',
     author='Dean Gardiner',
     author_email='gardiner91@gmail.com',
-    description='',
+    description='Extensible filename parsing library for Python',
     requires=['Logr']
 )
