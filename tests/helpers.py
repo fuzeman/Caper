@@ -24,6 +24,7 @@ def setup_path():
 setup_path()
 
 from caper import CaperFragment
+from caper.helpers import xrange_six
 
 
 def create_fragments(value):
@@ -36,7 +37,7 @@ def create_fragments(value):
     fragment_values = value.split('.')
     fragments = []
 
-    for x in xrange(len(fragment_values)):
+    for x in xrange_six(len(fragment_values)):
         fragment = CaperFragment()
         fragment.value = fragment_values[x]
 
