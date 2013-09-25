@@ -15,8 +15,8 @@ def assert_result(result, *chains):
     assert len(result.chains) == len(chains)
 
     for x, (weight, info) in enumerate(chains):
-        assert result.chains[x][1].weight == weight
-        assert result.chains[x][1].info == info
+        assert round(result.chains[x].weight, 2) == round(weight, 2)
+        assert result.chains[x].info == info
 
 
 def test_season_S00():
@@ -146,13 +146,13 @@ def test_episode_part():
 
 
 def test_episode_bare():
-    assert_result(caper.parse('Show Name.102.x264'), (0.95, {
+    assert_result(caper.parse('Show Name.102.x264'), (0.96, {
         'identifier': [
             {'episode': '02', 'season': '1'}
         ],
         'show_name': ['Show', 'Name'],
         'video': [{'codec': 'x264'}]
-    }), (0.75, {
+    }), (0.94, {
         'show_name': ['Show', 'Name'],
         'video': [{'codec': 'x264'}]
     }))

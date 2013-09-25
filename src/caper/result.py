@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 
-from operator import itemgetter
+import copy
 from logr import Logr
 
 
@@ -85,16 +84,27 @@ class CaperResult(object):
         self.chains = []
 
     def build(self):
+        max_matched = 0
+
         for head in self.heads:
             for chain in self.combine_chain(head):
-                chain.finish()
+                if chain.num_matched > max_matched:
+                    max_matched = chain.num_matched
 
-                self.chains.append((chain.weight, chain))
+                self.chains.append(chain)
 
-        self.chains.sort(key=itemgetter(0), reverse=True)
+        for chain in self.chains:
+            chain.weights.append(chain.num_matched / float(max_matched))
+            chain.finish()
 
-        for weight, chain in self.chains:
-            Logr.debug("chain %s %s", weight, chain.info)
+        self.chains.sort(key=lambda chain: chain.weight, reverse=True)
+
+        for chain in self.chains:
+            Logr.debug("chain weight: %.02f", chain.weight)
+            Logr.debug("\tInfo: %s", chain.info)
+
+            Logr.debug("\tWeights: %s", chain.weights)
+            Logr.debug("\tNumber of Fragments Matched: %s", chain.num_matched)
 
     def combine_chain(self, subject, chain=None):
         nodes = subject if type(subject) is list else [subject]
@@ -129,14 +139,16 @@ class CaperResultChain(object):
         #: :type: float
         self.weight = None
         self.info = {}
+        self.num_matched = 0
 
-        self._weights = []
+        self.weights = []
 
     def update(self, subject):
         if subject.weight is None:
             return
 
-        self._weights.append(subject.weight)
+        self.num_matched += len(subject.fragments) if subject.fragments is not None else 0
+        self.weights.append(subject.weight)
 
         if subject.match:
             if subject.tag not in self.info:
@@ -145,7 +157,7 @@ class CaperResultChain(object):
             self.info[subject.tag].insert(0, subject.match)
 
     def finish(self):
-        self.weight = sum(self._weights) / len(self._weights)
+        self.weight = sum(self.weights) / len(self.weights)
 
     def copy(self):
         chain = CaperResultChain()
@@ -153,6 +165,7 @@ class CaperResultChain(object):
         chain.weight = self.weight
         chain.info = copy.deepcopy(self.info)
 
-        chain._weights = copy.copy(self._weights)
+        chain.num_matched = self.num_matched
+        chain.weights = copy.copy(self.weights)
 
         return chain
