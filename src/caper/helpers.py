@@ -37,12 +37,16 @@ def clean_dict(target, remove=None):
     if type(target) is not dict:
         raise ValueError("Target is required to be a dict")
 
+    remove_keys = []
     for key in target.keys():
         if type(target[key]) is not dict:
             if target[key] == remove:
-                target.pop(key)
+                remove_keys.append(key)
         else:
             clean_dict(target[key], remove)
+
+    for key in remove_keys:
+        target.pop(key)
 
     return target
 
