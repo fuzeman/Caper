@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+import os
+
+
+def setup_path():
+    src_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src'))
+
+    if src_path not in sys.path:
+        sys.path.insert(0, src_path)
+setup_path()
+
 from caper import CaperFragment
 
 
