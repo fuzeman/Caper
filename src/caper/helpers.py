@@ -48,10 +48,13 @@ def clean_dict(target, remove=None):
 
 
 def xrange_six(start, stop=None, step=None):
-    if PY3:
-        return range(start, stop, step)
-    else:
-        if stop is not None and step is not None:
+    if stop is not None and step is not None:
+        if PY3:
+            return range(start, stop, step)
+        else:
             return xrange(start, stop, step)
+    else:
+        if PY3:
+            return range(start)
         else:
             return xrange(start)
