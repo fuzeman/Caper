@@ -14,7 +14,7 @@ Extensible filename parsing library for Python
 
 ### Unit Tests
 
-1. `py.test`
+1. Run `py.test`
 
 ### Name Tester
 *(tools/run_tests.py)*
