@@ -19,7 +19,7 @@ caper = Caper()
 
 
 def test_closure_generation():
-    caper._closure_split('[Group]_Show_Name_7.2_An_Episode_Title_(Blu-Ray_1280x720_FLAC)_[645G7V54].mkv') == [
+    assert [s.value for s in caper._closure_split('[Group]_Show_Name_7.2_An_Episode_Title_(Blu-Ray_1280x720_FLAC)_[645G7V54].mkv')] == [
         '[Group]',
         'Show_Name_7.2_An_Episode_Title',
         '(Blu-Ray_1280x720_FLAC)',
@@ -27,11 +27,11 @@ def test_closure_generation():
         'mkv'
     ]
 
-    caper._closure_split('Show.Name.S01.DVDrip.x264') == [
+    assert [s.value for s in caper._closure_split('Show.Name.S01.DVDrip.x264')] == [
         'Show.Name.S01.DVDrip.x264'
     ]
 
-    caper._closure_split('[Group]_Show_Name_[video_ver.]_[720p]_[645G7V54].mkv') == [
+    assert [s.value for s in caper._closure_split('[Group]_Show_Name_[video_ver.]_[720p]_[645G7V54].mkv')] == [
         '[Group]',
         'Show_Name',
         '[video_ver.]',
@@ -40,12 +40,12 @@ def test_closure_generation():
         'mkv'
     ]
 
-    caper._closure_split('[GROUP] Show Name') == [
+    assert [s.value for s in caper._closure_split('[GROUP] Show Name')] == [
         '[GROUP]',
         'Show Name'
     ]
 
-    caper._closure_split('Show Name [GROUP-NAME]') == [
+    assert [s.value for s in caper._closure_split('Show Name [GROUP-NAME]')] == [
         'Show Name',
         '[GROUP-NAME]'
     ]

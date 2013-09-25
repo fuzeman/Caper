@@ -1,8 +1,21 @@
+# Copyright 2013 Dean Gardiner <gardiner91@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from logr import Logr
-import math
-from caper import CaperFragment
 from caper.helpers import clean_dict
-from caper.result import CaperClosureNode, CaperFragmentNode
+from caper.result import CaperFragmentNode
 from caper.step import CaptureStep
 from caper.constraint import CaptureConstraint
 
@@ -98,7 +111,7 @@ class CaptureGroup(object):
 
         return nodes
 
-    def execute(self, once=False):
+    def execute(self):
         heads_finished = None
 
         while heads_finished is None or not (len(heads_finished) == len(self.result.heads) and all(heads_finished)):

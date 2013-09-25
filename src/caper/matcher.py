@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pprint
 
+import pprint
 import re
 from logr import Logr
 from caper.helpers import is_list_type, clean_dict

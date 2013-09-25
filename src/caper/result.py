@@ -59,7 +59,8 @@ class CaperClosureNode(CaperNode):
 class CaperFragmentNode(CaperNode):
     def __init__(self, closure, fragments, parent=None, tag=None, weight=None, match=None):
         """
-        :type fragment: caper.objects.CaperFragment or list of caper.objects.CaperFragment
+        :type closure: caper.objects.CaperClosure
+        :type fragments: list of caper.objects.CaperFragment
         """
         super(CaperFragmentNode, self).__init__(closure, parent, tag, weight, match)
 
