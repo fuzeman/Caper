@@ -51,4 +51,7 @@ def xrange_six(start, stop=None, step=None):
     if PY3:
         return range(start, stop, step)
     else:
-        return xrange(start, stop, step)
+        if stop is not None and step is not None:
+            return xrange(start, stop, step)
+        else:
+            return xrange(start)
