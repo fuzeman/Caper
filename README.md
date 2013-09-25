@@ -6,6 +6,7 @@ Extensible Python filename parsing library
 **Dependencies**
 
  - Logr ([https://github.com/fuzeman/Logr](https://github.com/fuzeman/Logr))
+ - *pytest - for running the unit tests*
 
 ## Testing
 
