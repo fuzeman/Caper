@@ -9,5 +9,10 @@ python:
 
 install:
   - "pip install -r src/requirements.txt --use-mirrors"
+  - "pip install -r tests/requirements.txt --use-mirrors"
 
-script: py.test
+script:
+  - "py.test tests/ -v --cov src/caper --cov-report term-missing"
+
+after_success:
+  - coveralls

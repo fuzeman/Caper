@@ -3,3 +3,4 @@ tools/*.csv
 tools/*.mysql
 /.idea
 *.iml
+/.coverage
