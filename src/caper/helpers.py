@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+
 
 def is_list_type(obj, element_type):
     if not type(obj) is list:
@@ -39,3 +45,10 @@ def clean_dict(target, remove=None):
             clean_dict(target[key], remove)
 
     return target
+
+
+def xrange_six(start, stop=None, step=None):
+    if PY3:
+        return range(start, stop, step)
+    else:
+        return xrange(start, stop, step)

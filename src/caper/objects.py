@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from caper.helpers import xrange_six
+
 
 class CaperClosure(object):
     def __init__(self, value):
@@ -56,7 +58,7 @@ class CaperFragment(object):
             count -= 1
 
         cur = self
-        for x in xrange(count):
+        for x in xrange_six(count):
             if cur and getattr(cur, direction):
                 cur = getattr(cur, direction)
                 result.append(cur)
