@@ -11,12 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from logr import Logr
 
+from logr import Logr
 from caper.matcher import FragmentMatcher
 from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
+
+
+__version_info__ = ('0', '2', '0')
+__version_branch__ = 'master'
+
+__version__ = "%s%s" % (
+    '.'.join(__version_info__),
+    '-' + __version_branch__ if __version_branch__ else ''
+)
 
 
 CL_START_CHARS = ['(', '[']
@@ -41,6 +50,12 @@ class Caper(object):
         }
 
     def _closure_split(self, name):
+        """
+        :type name: str
+
+        :rtype: list of CaperClosure
+        """
+
         closures = []
 
         def end_closure(closures, buf):
@@ -48,7 +63,13 @@ class Caper(object):
             if len(buf) < 1:
                 return
 
-            closures.append(CaperClosure(buf))
+            cur = CaperClosure(buf)
+            cur.left = closures[len(closures) - 1] if len(closures) > 0 else None
+
+            if cur.left:
+                cur.left.right = cur
+
+            closures.append(cur)
 
         state = CL_START
         buf = ""
@@ -72,9 +93,21 @@ class Caper(object):
         return closures
 
     def _clean_closure(self, closure):
+        """
+        :type closure: str
+
+        :rtype: str
+        """
+
         return closure.lstrip(STRIP_START_CHARS).rstrip(STRIP_END_CHARS)
 
     def _fragment_split(self, closures):
+        """
+        :type closures: list of CaperClosure
+
+        :rtype: list of CaperClosure
+        """
+
         cur_position = 0
         cur = CaperFragment()
 

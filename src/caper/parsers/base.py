@@ -11,17 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import re
 
 from logr import Logr
 from caper import FragmentMatcher
 from caper.group import CaptureGroup
-from caper.result import CaperResult
+from caper.result import CaperResult, CaperClosureNode
 
 
 class Parser(object):
     def __init__(self, pattern_groups):
         self.matcher = FragmentMatcher(pattern_groups)
+
+        self.closures = None
+        #: :type: caper.result.CaperResult
+        self.result = None
+
+        self._match_cache = None
+        self._fragment_pos = None
+        self._closure_pos = None
+        self._history = None
+
         self.reset()
 
     def reset(self):
@@ -33,9 +42,22 @@ class Parser(object):
         self._closure_pos = -1
         self._history = []
 
-    def run(self, closures):
+    def setup(self, closures):
+        """
+        :type closures: list of CaperClosure
+        """
+
         self.reset()
         self.closures = closures
+
+        self.result.heads = [CaperClosureNode(closures[0])]
+
+    def run(self, closures):
+        """
+        :type closures: list of CaperClosure
+        """
+
+        raise NotImplementedError()
 
     #
     # Closure Methods
@@ -98,7 +120,7 @@ class Parser(object):
     #
 
     def capture_fragment(self, tag, regex=None, func=None, single=True):
-        return CaptureGroup(self).capture_fragment(
+        return CaptureGroup(self, self.result).capture_fragment(
             tag,
             regex=regex,
             func=func,
@@ -106,7 +128,7 @@ class Parser(object):
         )
 
     def capture_closure(self, tag, regex=None, func=None, single=True):
-        return CaptureGroup(self).capture_closure(
+        return CaptureGroup(self, self.result).capture_closure(
             tag,
             regex=regex,
             func=func,

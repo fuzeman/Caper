@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import pprint
 import re
 from caper.parsers.base import Parser
 
@@ -67,7 +65,11 @@ class AnimeParser(Parser):
         return match.group('group')
 
     def run(self, closures):
-        super(AnimeParser, self).run(closures)
+        """
+        :type closures: list of CaperClosure
+        """
+
+        self.setup(closures)
 
         self.capture_closure('group', func=self.capture_group)\
             .execute(once=True)
@@ -82,4 +84,5 @@ class AnimeParser(Parser):
             .capture_fragment('audio', regex='audio', single=False) \
             .execute()
 
+        self.result.build()
         return self.result

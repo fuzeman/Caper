@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pprint
+from logr import Logr
 from caper.parsers.base import Parser
+from caper.result import CaperFragmentNode
 
 
 PATTERN_GROUPS = [
@@ -94,25 +95,48 @@ class SceneParser(Parser):
         super(SceneParser, self).__init__(PATTERN_GROUPS)
 
     def capture_group(self, fragment):
-        if fragment.left_sep == '-':
+        if fragment.left_sep == '-' and not fragment.right:
             return fragment.value
 
         return None
 
     def run(self, closures):
-        super(SceneParser, self).run(closures)
+        """
+        :type closures: list of CaperClosure
+        """
+
+        self.setup(closures)
 
         self.capture_fragment('show_name', single=False)\
-            .until(fragment__re=('identifier', 0.6))\
+            .until(fragment__re='identifier')\
             .until(fragment__re='video')\
             .execute()
 
         self.capture_fragment('identifier', regex='identifier', single=False)\
             .capture_fragment('video', regex='video', single=False)\
-            .until(left_sep__eq='-')\
+            .until(left_sep__eq='-', right__eq=None)\
             .execute()
 
         self.capture_fragment('group', func=self.capture_group)\
             .execute()
 
+        self.print_tree(self.result.heads)
+
+        self.result.build()
         return self.result
+
+    def print_tree(self, heads):
+        for head in heads:
+            head = head if type(head) is list else [head]
+
+            if type(head[0]) is CaperFragmentNode:
+                for fragment in head[0].fragments:
+                    Logr.debug(fragment.value)
+            else:
+                Logr.debug(head[0].closure.value)
+
+            for node in head:
+                Logr.debug('\t' + str(node).ljust(55) + '\t' + str(node.weight) + '\t' + str(node.match))
+
+            if len(head) > 0 and head[0].parent:
+                self.print_tree([head[0].parent])

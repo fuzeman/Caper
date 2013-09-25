@@ -1,3 +1,17 @@
+# Copyright 2013 Dean Gardiner <gardiner91@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from logr import Logr
 
 
@@ -31,57 +45,22 @@ class CaptureStep(object):
 
         raise NotImplementedError()
 
-    def execute(self, parser):
-        if self.is_complete():
-            return
-
-        subject = None
-        if not self.regex:
-            subject = self._get_next_subject(parser)
-            if subject is None:
-                return
-
+    def execute(self, fragment):
         if self.regex:
-            match = self.capture_group.parser.matcher.parser_match(parser, self.regex)
+            weight, match, num_fragments = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
             Logr.debug('(execute) [regex] tag: "%s"', self.tag)
             if match:
-                self.match_found(match)
-                parser.commit()
-                return True
+                return True, weight, match, num_fragments
         elif self.func:
-            match = self.func(subject)
+            match = self.func(fragment)
             Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
             if match:
-                self.match_found({self.tag: match})
-                parser.commit()
-                return True
+                return True, 1.0, match, 1
         else:
-            Logr.debug('(execute) [raw] %s += "%s"', self.tag, subject.value)
-            self.match_found({self.tag: subject.value})
-            parser.commit()
-            return True
+            Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
+            return True, 1.0, fragment.value, 1
 
-        return False
-
-    def is_complete(self):
-        return self.single and self.capture_group.parser.result.has_any(self.tag)
-
-    def match_valid(self, match):
-        if not match:
-            return False
-
-        has_data = False
-        for key, value in match.items():
-            if value:
-                has_data = True
-
-        return has_data
-
-    def match_found(self, match):
-        if not self.match_valid(match):
-            return
-
-        self.capture_group.parser.result.update(match)
+        return False, None, None, 1
 
     def __repr__(self):
         attribute_values = [key + '=' + repr(getattr(self, key))

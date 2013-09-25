@@ -1,3 +1,5 @@
 *.pyc
 tools/*.csv
 tools/*.mysql
+/.idea
+*.iml

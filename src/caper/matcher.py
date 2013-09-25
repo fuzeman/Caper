@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pprint
 
+import pprint
 import re
 from logr import Logr
 from caper.helpers import is_list_type, clean_dict
@@ -157,7 +157,7 @@ class FragmentMatcher(object):
 
         :return: The weight of the match found between 0.0 and 1.0,
                   where 1.0 means perfect match and 0.0 means no match
-        :rtype: float
+        :rtype: (float, dict, int)
         """
 
         group_name, weight_groups = self.find_group(group_name)
@@ -166,6 +166,7 @@ class FragmentMatcher(object):
             for pattern in patterns:
                 cur_fragment = fragment
                 success = True
+                result = {}
 
                 # Ignore empty patterns
                 if len(pattern) < 1:
@@ -177,7 +178,9 @@ class FragmentMatcher(object):
                         break
 
                     match = fragment_pattern.match(cur_fragment.value)
-                    if not match:
+                    if match:
+                        result.update(match.groupdict())
+                    else:
                         success = False
                         break
 
@@ -185,6 +188,6 @@ class FragmentMatcher(object):
 
                 if success:
                     Logr.debug("Found match with weight %s" % weight)
-                    return float(weight)
+                    return float(weight), result, len(pattern)
 
-        return 0.0
+        return 0.0, None, 1
