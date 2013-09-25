@@ -1,4 +1,4 @@
-# Caper [![](https://travis-ci.org/fuzeman/Caper.png?branch=master)](https://travis-ci.org/fuzeman/Caper)
+# Caper [![](https://travis-ci.org/fuzeman/Caper.png?branch=master)](https://travis-ci.org/fuzeman/Caper) [![](https://coveralls.io/repos/fuzeman/Caper/badge.png?branch=master)](https://coveralls.io/r/fuzeman/Caper?branch=master)
 Extensible filename parsing library for Python
 
 ## Development
