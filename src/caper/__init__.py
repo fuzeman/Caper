@@ -19,6 +19,15 @@ from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
 
 
+__version_info__ = ('0', '2', '0')
+__version_branch__ = 'develop'
+
+__version__ = "%s%s" % (
+    '.'.join(__version_info__),
+    '-' + __version_branch__ if __version_branch__ else ''
+)
+
+
 CL_START_CHARS = ['(', '[']
 CL_END_CHARS = [')', ']']
 

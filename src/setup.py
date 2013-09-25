@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from caper import __version__
 from distutils.core import setup
 
 
 setup(
     name='caper',
-    version='0.1',
+    version=__version__,
     packages=['caper'],
     package_dir={'': 'src'},
     url='https://github.com/fuzeman/caper',
