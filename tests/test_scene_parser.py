@@ -19,6 +19,8 @@ import logging
 from logr import Logr
 from caper import Caper
 from caper.result import CaperResult
+from matchers import has_info
+from hamcrest import *
 
 Logr.configure(logging.DEBUG)
 caper = Caper()
@@ -173,3 +175,20 @@ def test_episode_bare():
         'show_name': ['Show', 'Name'],
         'video': [{'codec': 'x264'}]
     }))
+
+
+def test_episode_resolution():
+    assert_that(
+        caper.parse('Show Name.S01E05.720p-GROUP'),
+        has_info('video', {'resolution': '720p'})
+    )
+
+    assert_that(
+        caper.parse('Show Name.S01E05.1080p'),
+        has_info('video', {'resolution': '1080p'})
+    )
+
+    assert_that(
+        caper.parse('Show Name.S01E05.480p.HDTV-GROUP'),
+        has_info('video', {'resolution': '480p'})
+    )

@@ -66,6 +66,12 @@ PATTERN_GROUPS = [
     ('video', [
         r'(?P<aspect>FS|WS)',
 
+        (r'(?P<resolution>%s)', [
+            '480p',
+            '720p',
+            '1080p'
+        ]),
+
         (r'(?P<source>%s)', [
             'HDTV',
             'PDTV',
