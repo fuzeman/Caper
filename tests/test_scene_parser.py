@@ -192,3 +192,9 @@ def test_episode_resolution():
         caper.parse('Show Name.S01E05.480p.HDTV-GROUP'),
         has_info('video', {'resolution': '480p'})
     )
+
+
+def test_closures():
+    r = caper.parse('Show Name.S01E05.[720p]-GROUP')
+    assert_that(r, has_info('video', {'resolution': '720p'}))
+    assert_that(r, has_info('group', 'GROUP'))
