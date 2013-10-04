@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pprint
 import re
 from logr import Logr
 from caper.helpers import is_list_type, clean_dict
@@ -56,8 +55,6 @@ class FragmentMatcher(object):
                     weight_patterns.append(tuple(result))
 
                 self.regex[group_name].append((weight, weight_patterns))
-
-        pprint.pprint(self.regex)
 
     def find_group(self, name):
         for group_name, weight_groups in self.regex.items():
