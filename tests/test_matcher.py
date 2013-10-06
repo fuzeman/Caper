@@ -16,7 +16,7 @@ from helpers import setup_path
 setup_path()
 
 from caper import FragmentMatcher
-from matchers import has_info, matches_dict
+from matchers import matches_dict
 from helpers import create_fragments
 from hamcrest import assert_that, none
 import pytest

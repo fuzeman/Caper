@@ -14,7 +14,7 @@
 
 import re
 from logr import Logr
-from caper.helpers import is_list_type, clean_dict
+from caper.helpers import is_list_type
 
 
 class FragmentMatcher(object):
