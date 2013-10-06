@@ -63,62 +63,6 @@ class FragmentMatcher(object):
 
         return None
 
-    def parser_match(self, parser, group_name, single=True):
-        """
-
-        :type parser: caper.parsers.base.Parser
-        """
-        result = None
-
-        for group, weight_groups in self.regex.items():
-            if group_name and group != group_name:
-                continue
-
-            # TODO handle multiple weights
-            weight, patterns = weight_groups[0]
-
-            for pattern in patterns:
-                fragments = []
-                pattern_matched = True
-                pattern_result = {}
-
-                for fragment_pattern in pattern:
-                    if not parser.fragment_available():
-                        pattern_matched = False
-                        break
-
-                    fragment = parser.next_fragment()
-                    fragments.append(fragment)
-
-                    Logr.debug('[r"%s"].match("%s")', fragment_pattern.pattern, fragment.value)
-                    match = fragment_pattern.match(fragment.value)
-                    if match:
-                        Logr.debug('Pattern "%s" matched', fragment_pattern.pattern)
-                    else:
-                        pattern_matched = False
-                        break
-
-                    pattern_result.update(clean_dict(match.groupdict()))
-
-                if pattern_matched:
-                    if result is None:
-                        result = {}
-
-                    if group not in result:
-                        result[group] = {}
-
-                    Logr.debug('Matched on <%s>', ' '.join([f.value for f in fragments]))
-
-                    result[group].update(pattern_result)
-                    parser.commit()
-
-                    if single:
-                        return result
-                else:
-                    parser.rewind()
-
-        return result
-
     def value_match(self, value, group_name=None, single=True):
         result = None
 
