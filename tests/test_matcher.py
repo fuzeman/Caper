@@ -16,7 +16,32 @@ from helpers import setup_path
 setup_path()
 
 from caper import FragmentMatcher
+from matchers import matches_dict
 from helpers import create_fragments
+from hamcrest import assert_that, none
+import pytest
+
+
+def test_matcher_construction():
+    matcher = FragmentMatcher([
+        ('test', [
+            (1.0, [
+                ()
+            ]),
+            (1.0, [
+                (r'^abc$', r'^1234$'),
+            ])
+        ]),
+        ('test3', [
+            (r'(?P<resolution>%s)', [
+                '480p',
+                '720p',
+                '1080p'
+            ]),
+        ])
+    ])
+
+    assert matcher.find_group('test2') is None
 
 
 def test_fragment_match():
@@ -42,3 +67,43 @@ def test_fragment_match():
     assert matcher.fragment_match(create_fragments('abc.456')[0], 'test')[0] == 0
 
     assert matcher.fragment_match(create_fragments('def.123')[0], 'test')[0] == 0
+
+    matcher = FragmentMatcher([
+        ('test', [
+            (1.0, [
+                ()
+            ]),
+            (1.0, [
+                (r'^abc$', r'^1234$'),
+            ])
+        ])
+    ])
+
+    assert matcher.fragment_match(create_fragments('abc.1234')[0], 'test')[0] == 1
+
+
+def test_value_match():
+    matcher = FragmentMatcher([
+        ('test', [
+            (1.0, [
+                r'^(?P<a>abc)$',
+            ]),
+            (0.8, [
+                r'^(?P<b>1234)$',
+            ])
+        ]),
+        ('test2', [
+            (1.0, [
+                r'^(?P<a>abcdefg)$',
+            ]),
+        ])
+    ])
+
+    assert_that(matcher.value_match('abc'), matches_dict({'test': {'a': 'abc'}}))
+
+    assert_that(matcher.value_match('abcdefg', 'test2'), matches_dict({'test2': {'a': 'abcdefg'}}))
+
+    assert_that(matcher.value_match('abcd'), none())
+
+if __name__ == '__main__':
+    pytest.main()
