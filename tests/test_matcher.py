@@ -94,14 +94,14 @@ def test_value_match():
         ]),
         ('test2', [
             (1.0, [
-                r'^(?P<a>abc)$',
+                r'^(?P<a>abcdefg)$',
             ]),
         ])
     ])
 
     assert_that(matcher.value_match('abc'), matches_dict({'test': {'a': 'abc'}}))
 
-    assert_that(matcher.value_match('abc', 'test2'), matches_dict({'test2': {'a': 'abc'}}))
+    assert_that(matcher.value_match('abcdefg', 'test2'), matches_dict({'test2': {'a': 'abcdefg'}}))
 
     assert_that(matcher.value_match('abcd'), none())
 
