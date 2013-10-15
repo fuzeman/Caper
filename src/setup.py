@@ -19,7 +19,7 @@ from distutils.core import setup
 setup(
     name='caper',
     version=__version__,
-    packages=['caper'],
+    packages=['caper', 'caper.parsers'],
     package_dir={'': 'src'},
     url='https://github.com/fuzeman/caper',
     license='Apache License, Version 2.0',
