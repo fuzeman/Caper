@@ -194,6 +194,19 @@ def test_episode_resolution():
     )
 
 
+def test_episode_source():
+    assert_that(
+        caper.parse('Show Name (2011) S01E01 720p WEBDL x264-GROUP'),
+        has_info('video', {'source': 'WEBDL'})
+    )
+
+    # TODO this isn't supported yet
+    #assert_that(
+    #    caper.parse('Show Name (2011) S01E01 720p WEB DL x264-GROUP'),
+    #    has_info('video', {'source': 'WEBDL'})
+    #)
+
+
 def test_closures():
     r = caper.parse('Show Name.S01E05.[720p]-GROUP')
     assert_that(r, has_info('video', {'resolution': '720p'}))
