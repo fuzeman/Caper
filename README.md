@@ -8,7 +8,7 @@ Extensible filename parsing library for Python
 
 **Dependencies**
 
-    Logr>=0.2.1
+    Logr>=0.2.2
 
 ## Testing
 
