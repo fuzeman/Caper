@@ -43,10 +43,10 @@ CL_END = 1
 
 
 class Caper(object):
-    def __init__(self):
+    def __init__(self, debug=False):
         self.parsers = {
-            'scene': SceneParser(),
-            'anime': AnimeParser()
+            'scene': SceneParser(debug),
+            'anime': AnimeParser(debug)
         }
 
     def _closure_split(self, name):

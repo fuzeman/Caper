@@ -20,8 +20,8 @@ from caper import Caper
 
 
 class CaperTests(object):
-    def __init__(self):
-        self.caper = Caper()
+    def __init__(self, debug):
+        self.caper = Caper(debug=debug)
 
         self.name_col = None
         self.test_names = None
@@ -69,10 +69,19 @@ class CaperTests(object):
 
             print row_format % (i + 1, name)
 
-            self.caper.parse(name, parser_type)
+            result = self.caper.parse(name, parser_type)
 
-            print "Press ENTER to continue testing"
-            raw_input()
+            if arguments['print'] and result and result.chains:
+                print "------------------------------------------------------------------------"
+
+                for chain in result.chains:
+                    print "Chain [%s]: %s" % (chain.weight, chain.info)
+
+                print "------------------------------------------------------------------------"
+
+            if arguments['pause']:
+                print "Press ENTER to continue testing"
+                raw_input()
 
 
 def raw_input_default(message, default=None):
@@ -83,8 +92,16 @@ def raw_input_default(message, default=None):
     return value
 
 
-def get_argument(n):
-    return sys.argv[n] if len(sys.argv) > n else None
+def get_argument(n, value_type=str, default=None):
+    value = sys.argv[n] if len(sys.argv) > n else default
+
+    if value_type is str:
+        return value
+
+    if value_type is bool:
+        return True if value.lower() == 'true' else False
+
+    raise ValueError('Unknown value_type "%s"' % value_type)
 
 
 def parse_arguments():
@@ -92,14 +109,16 @@ def parse_arguments():
         'parser_type': get_argument(1),
         'test_file': get_argument(2),
         'logging_mode': get_argument(3),
-        'start': get_argument(4)
+        'start': get_argument(4),
+        'pause': get_argument(5, bool, True),
+        'print': get_argument(6, bool, True)
     }
 
 
 if __name__ == '__main__':
     arguments = parse_arguments()
 
-    tests = CaperTests()
+    tests = CaperTests(debug=arguments['logging_mode'] == 'debug')
 
     parser_type = arguments['parser_type'] or \
         raw_input_default('Parser type (scene, anime) [scene]: ', 'scene')
@@ -122,7 +141,7 @@ if __name__ == '__main__':
         raw_input_default('Logging mode (debug, info) [info]: ', 'info')
 
     if logging_mode == 'debug':
-        Logr.configure(logging.DEBUG)
+        Logr.configure(logging.DEBUG, trace_origin=True)
     else:
         Logr.configure(logging.INFO)
 
