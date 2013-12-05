@@ -200,11 +200,15 @@ def test_episode_source():
         has_info('video', {'source': 'WEBDL'})
     )
 
-    # TODO this isn't supported yet
-    #assert_that(
-    #    caper.parse('Show Name (2011) S01E01 720p WEB DL x264-GROUP'),
-    #    has_info('video', {'source': 'WEBDL'})
-    #)
+    assert_that(
+        caper.parse('Show Name (2011) S01E01 720p WEB DL x264-GROUP'),
+        has_info('video', {'source': ['WEB', 'DL']})
+    )
+
+    assert_that(
+        caper.parse('Show Name (2011) S01E01 720p WEB-DL x264-GROUP'),
+        has_info('video', {'source': ['WEB', 'DL']})
+    )
 
 
 def test_closures():
