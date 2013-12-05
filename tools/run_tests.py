@@ -16,6 +16,10 @@ import logging
 import os
 from logr import Logr
 import sys
+
+src_path = os.path.join(os.path.dirname(__file__), '..', 'src')
+sys.path.insert(0, os.path.abspath(src_path))
+
 from caper import Caper
 
 
