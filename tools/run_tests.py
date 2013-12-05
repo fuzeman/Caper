@@ -93,13 +93,16 @@ def raw_input_default(message, default=None):
 
 
 def get_argument(n, value_type=str, default=None):
-    value = sys.argv[n] if len(sys.argv) > n else default
+    value = sys.argv[n] if len(sys.argv) > n else None
+
+    if value is None:
+        return default
 
     if value_type is str:
         return value
 
     if value_type is bool:
-        return True if value.lower() == 'true' else False
+        return value.lower() == 'true'
 
     raise ValueError('Unknown value_type "%s"' % value_type)
 
