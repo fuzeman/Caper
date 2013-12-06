@@ -19,8 +19,11 @@ import os
 def setup_path():
     src_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src'))
 
-    if src_path not in sys.path:
-        sys.path.insert(0, src_path)
+    if src_path in sys.path:
+        sys.path.remove(src_path)
+
+    sys.path.insert(0, src_path)
+
 setup_path()
 
 from caper import CaperFragment
