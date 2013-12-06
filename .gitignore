@@ -4,3 +4,5 @@ tools/*.mysql
 /.idea
 *.iml
 /.coverage
+/out
+/tools/test_data

@@ -211,6 +211,18 @@ def test_episode_source():
     )
 
 
+def test_episode_codec():
+    assert_that(
+        caper.parse('Show Name 2013 S01E01 720p WEB-DL H264 GROUP'),
+        has_info('video', {'codec': 'H264'})
+    )
+
+    assert_that(
+        caper.parse('Show Name 2013 S01E01 720p WEB-DL H 264 GROUP'),
+        has_info('video', {'codec': ['H', '264']})
+    )
+
+
 def test_closures():
     r = caper.parse('Show Name.S01E05.[720p]-GROUP')
     assert_that(r, has_info('video', {'resolution': '720p'}))
