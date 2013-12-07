@@ -17,47 +17,12 @@ setup_path()
 
 import logging
 from logr import Logr
-from caper import Caper
-from caper.result import CaperResult
-from matchers import has_info
-from hamcrest import *
-
 Logr.configure(logging.DEBUG)
+
+from caper import Caper
+from helpers import assert_result
+
 caper = Caper()
-
-
-def assert_result(result, *chains):
-    """Check if the result matches the expected chains
-
-    :type result: CaperResult
-    """
-    assert len(result.chains) == len(chains)
-
-    for x, (weight, info) in enumerate(chains):
-        assert round(result.chains[x].weight, 2) == round(weight, 2)
-        assert result.chains[x].info == info
-
-
-def test_season_S00():
-    assert_result(caper.parse('Show.Name.S01.DVDrip.x264'), (1.0, {
-        'identifier': [{'season': '01'}],
-        'show_name': ['Show', 'Name'],
-        'video': [
-            {'source': 'DVDrip'},
-            {'codec': 'x264'}
-        ]
-    }))
-
-
-def test_season_verbose():
-    assert_result(caper.parse('Show.Name.Season.1.DVDrip.x264'), (1.0, {
-        'identifier': [{'season': '1'}],
-        'show_name': ['Show', 'Name'],
-        'video': [
-            {'source': 'DVDrip'},
-            {'codec': 'x264'}
-        ]
-    }))
 
 
 def test_episode_S00E00():
@@ -109,7 +74,7 @@ def test_episode_extend():
     assert_result(caper.parse('Show.Name.S01E01-E02.DVDrip.x264'), (1.0, {
         'identifier': [
             {'season': '01', 'episode_from': '01', 'episode_to': '02'},
-        ],
+            ],
         'show_name': ['Show', 'Name'],
         'video': [
             {'source': 'DVDrip'},
@@ -175,55 +140,3 @@ def test_episode_bare():
         'show_name': ['Show', 'Name'],
         'video': [{'codec': 'x264'}]
     }))
-
-
-def test_episode_resolution():
-    assert_that(
-        caper.parse('Show Name.S01E05.720p-GROUP'),
-        has_info('video', {'resolution': '720p'})
-    )
-
-    assert_that(
-        caper.parse('Show Name.S01E05.1080p'),
-        has_info('video', {'resolution': '1080p'})
-    )
-
-    assert_that(
-        caper.parse('Show Name.S01E05.480p.HDTV-GROUP'),
-        has_info('video', {'resolution': '480p'})
-    )
-
-
-def test_episode_source():
-    assert_that(
-        caper.parse('Show Name (2011) S01E01 720p WEBDL x264-GROUP'),
-        has_info('video', {'source': 'WEBDL'})
-    )
-
-    assert_that(
-        caper.parse('Show Name (2011) S01E01 720p WEB DL x264-GROUP'),
-        has_info('video', {'source': ['WEB', 'DL']})
-    )
-
-    assert_that(
-        caper.parse('Show Name (2011) S01E01 720p WEB-DL x264-GROUP'),
-        has_info('video', {'source': ['WEB', 'DL']})
-    )
-
-
-def test_episode_codec():
-    assert_that(
-        caper.parse('Show Name 2013 S01E01 720p WEB-DL H264 GROUP'),
-        has_info('video', {'codec': 'H264'})
-    )
-
-    assert_that(
-        caper.parse('Show Name 2013 S01E01 720p WEB-DL H 264 GROUP'),
-        has_info('video', {'codec': ['H', '264']})
-    )
-
-
-def test_closures():
-    r = caper.parse('Show Name.S01E05.[720p]-GROUP')
-    assert_that(r, has_info('video', {'resolution': '720p'}))
-    assert_that(r, has_info('group', 'GROUP'))
