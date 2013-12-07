@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import os
 from logr import Logr
+import logging
+import csv
 import sys
+import os
 
 src_path = os.path.join(os.path.dirname(__file__), '..', 'src')
 sys.path.insert(0, os.path.abspath(src_path))
@@ -30,8 +31,8 @@ class CaperTests(object):
         self.name_col = None
         self.test_names = None
 
-    def _read_header(self, fp):
-        header = fp.readline().strip().split(",")
+    def _read_header(self, reader):
+        header = next(reader)
 
         for i, col in enumerate(header):
             if col == 'name':
@@ -45,11 +46,15 @@ class CaperTests(object):
             raise Exception()
 
         with open(filename) as fp:
-            self._read_header(fp)
+            reader = csv.reader(fp)
+
+            self._read_header(reader)
 
             self.test_names = []
-            for i, line in enumerate(fp):
-                row = line.strip().split(',')
+            for i, row in enumerate(reader):
+                if not len(row) or row[0].startswith('#'):
+                    continue
+
                 self.test_names.append(row[self.name_col])
 
                 if len(self.test_names) >= limit:
