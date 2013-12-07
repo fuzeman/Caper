@@ -20,6 +20,7 @@ from logr import Logr
 Logr.configure(logging.DEBUG)
 
 from caper import Caper
+from caper.parsers.scene import SceneParser
 from matchers import has_info
 from hamcrest import *
 
@@ -30,3 +31,11 @@ def test_closures():
     r = caper.parse('Show Name.S01E05.[720p]-GROUP')
     assert_that(r, has_info('video', {'resolution': '720p'}))
     assert_that(r, has_info('group', 'GROUP'))
+
+
+def test_print_tree():
+    closures = caper._closure_split('Show.Name.S01E02-GROUP')
+    closures = caper._fragment_split(closures)
+
+    scene_parser = SceneParser(debug=True)
+    scene_parser.run(closures)
