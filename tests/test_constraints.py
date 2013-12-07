@@ -125,6 +125,6 @@ def test_invalid_attribute():
             .execute()
 
     assert_that(
-        exc.value.message,
+        str(exc.value),
         equal_to("Unable to find attribute with name 'blah'")
     )
