@@ -105,5 +105,6 @@ def test_value_match():
 
     assert_that(matcher.value_match('abcd'), none())
 
+
 if __name__ == '__main__':
     pytest.main()

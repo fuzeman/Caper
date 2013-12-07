@@ -55,3 +55,15 @@ def create_fragments(value):
 
 def get_fragment_values(fragments):
     return [(fragment.value if fragment else None) for fragment in fragments]
+
+
+def assert_result(result, *chains):
+    """Check if the result matches the expected chains
+
+    :type result: CaperResult
+    """
+    assert len(result.chains) == len(chains)
+
+    for x, (weight, info) in enumerate(chains):
+        assert round(result.chains[x].weight, 2) == round(weight, 2)
+        assert result.chains[x].info == info
