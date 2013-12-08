@@ -22,8 +22,10 @@ PATTERN_GROUPS = [
         (1.0, [
             # S01E01-E02
             ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', '^E(?P<episode_to>\d+)$'),
-            # S03 E01 to E08
-            ('^S(?P<season>\d+)$', '^E(?P<episode_from>\d+)$', '^to$', '^E(?P<episode_to>\d+)$'),
+            # 'S03 E01 to E08' or 'S03 E01 - E09'
+            ('^S(?P<season>\d+)$', '^E(?P<episode_from>\d+)$', '^(to|-)$', '^E(?P<episode_to>\d+)$'),
+            # 'E01 to E08' or 'E01 - E09'
+            ('^E(?P<episode_from>\d+)$', '^(to|-)$', '^E(?P<episode_to>\d+)$'),
 
             # S01-S03
             ('^S(?P<season_from>\d+)$', '^S(?P<season_to>\d+)$'),
@@ -156,10 +158,13 @@ class SceneParser(Parser):
         super(SceneParser, self).__init__(PATTERN_GROUPS, debug)
 
     def capture_group(self, fragment):
-        if fragment.left_sep == '-' and not fragment.right:
-            return fragment.value
+        if fragment.closure.index + 1 != len(self.closures):
+            return None
 
-        return None
+        if fragment.left_sep != '-' or fragment.right:
+            return None
+
+        return fragment.value
 
     def run(self, closures):
         """
@@ -170,17 +175,17 @@ class SceneParser(Parser):
 
         self.capture_fragment('show_name', single=False)\
             .until(fragment__re='identifier')\
-            .until(fragment__re='video') \
-            .until(fragment__re='dvd') \
-            .until(fragment__re='audio') \
-            .until(fragment__re='scene') \
+            .until(fragment__re='video')\
+            .until(fragment__re='dvd')\
+            .until(fragment__re='audio')\
+            .until(fragment__re='scene')\
             .execute()
 
         self.capture_fragment('identifier', regex='identifier', single=False)\
-            .capture_fragment('video', regex='video', single=False) \
-            .capture_fragment('dvd', regex='dvd', single=False) \
-            .capture_fragment('audio', regex='audio', single=False) \
-            .capture_fragment('scene', regex='scene', single=False) \
+            .capture_fragment('video', regex='video', single=False)\
+            .capture_fragment('dvd', regex='dvd', single=False)\
+            .capture_fragment('audio', regex='audio', single=False)\
+            .capture_fragment('scene', regex='scene', single=False)\
             .until(left_sep__eq='-', right__eq=None)\
             .execute()
 

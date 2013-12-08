@@ -63,7 +63,7 @@ class Caper(object):
             if len(buf) < 1:
                 return
 
-            cur = CaperClosure(buf)
+            cur = CaperClosure(len(closures), buf)
             cur.left = closures[len(closures) - 1] if len(closures) > 0 else None
 
             if cur.left:
@@ -109,7 +109,7 @@ class Caper(object):
         """
 
         cur_position = 0
-        cur = CaperFragment()
+        cur = None
 
         def end_fragment(fragments, cur, cur_position):
             cur.position = cur_position
@@ -126,12 +126,30 @@ class Caper(object):
         for closure in closures:
             closure.fragments = []
 
+            separator_buffer = ""
+
             for x, ch in enumerate(self._clean_closure(closure.value)):
+                if not cur:
+                    cur = CaperFragment(closure)
+
                 if ch in FRAGMENT_SEPARATORS:
-                    end_fragment(closure.fragments, cur, cur_position)
+                    if cur.value:
+                        separator_buffer = ""
+
+                    separator_buffer += ch
+
+                    if cur.value or not closure.fragments:
+                        end_fragment(closure.fragments, cur, cur_position)
+                    elif len(separator_buffer) > 1:
+                        cur.value = separator_buffer.strip()
+
+                        if cur.value:
+                            end_fragment(closure.fragments, cur, cur_position)
+
+                        separator_buffer = ""
 
                     # Reset
-                    cur = CaperFragment()
+                    cur = None
                     cur_position += 1
                 else:
                     cur.value += ch
@@ -142,7 +160,7 @@ class Caper(object):
 
                 # Reset
                 cur_position = 0
-                cur = CaperFragment()
+                cur = None
 
         return closures
 

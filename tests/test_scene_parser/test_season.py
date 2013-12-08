@@ -63,3 +63,9 @@ def test_season_range():
         caper.parse('Show.Name.S01-S03.DVDrip.x264'),
         has_info('identifier', {'season_from': '01', 'season_to': '03'})
     )
+
+    assert_that(
+        caper.parse('Show Name S01 (E01 - E08) WEB-DL'),
+        has_info('identifier', {'season': '01'}),
+        has_info('identifier', {'episode_from': '01', 'episode_to': '08'})
+    )

@@ -21,6 +21,17 @@ from caper import Caper
 caper = Caper()
 
 
+def create_testable_closures(closures):
+    result = []
+    for closure in closures:
+        if closure.fragments and len(closure.fragments) > 0:
+            result.append((closure.value, [fragment.value for fragment in closure.fragments]))
+        else:
+            result.append(closure.value)
+
+    return result
+
+
 def test_closure_generation():
     assert [s.value for s in caper._closure_split('[Group]_Show_Name_7.2_An_Episode_Title_(Blu-Ray_1280x720_FLAC)_[645G7V54].mkv')] == [
         '[Group]',
@@ -55,30 +66,20 @@ def test_closure_generation():
 
 
 def test_fragment_generation():
-    def testable_closures(closures):
-        result = []
-        for closure in closures:
-            if closure.fragments and len(closure.fragments) > 0:
-                result.append((closure.value, [fragment.value for fragment in closure.fragments]))
-            else:
-                result.append(closure.value)
-
-        return result
-
     #
     # [Another Group] Some Show Name [720p DVD]_[G84VA2BX]
     #
 
     closures = caper._closure_split('[Another Group] Some Show Name [720p DVD]_[G84VA2BX]')
 
-    assert testable_closures(closures) == [
+    assert create_testable_closures(closures) == [
         '[Another Group]',
         'Some Show Name',
         '[720p DVD]',
         '[G84VA2BX]'
     ]
 
-    assert testable_closures(caper._fragment_split(closures)) == [
+    assert create_testable_closures(caper._fragment_split(closures)) == [
         ('[Another Group]', [
             'Another',
             'Group'
@@ -103,11 +104,11 @@ def test_fragment_generation():
 
     closures = caper._closure_split('Show.Name.2010.S01.REPACK.1080p.BluRay.x264-GROUP')
 
-    assert testable_closures(closures) == [
+    assert create_testable_closures(closures) == [
         'Show.Name.2010.S01.REPACK.1080p.BluRay.x264-GROUP'
     ]
 
-    assert testable_closures(caper._fragment_split(closures)) == [
+    assert create_testable_closures(caper._fragment_split(closures)) == [
         ('Show.Name.2010.S01.REPACK.1080p.BluRay.x264-GROUP', [
             'Show',
             'Name',
@@ -118,5 +119,42 @@ def test_fragment_generation():
             'BluRay',
             'x264',
             'GROUP'
+        ])
+    ]
+
+
+def test_fragment_extend():
+    #
+    # Show Name S01 (E01 - E08) WEB-DL
+    #
+
+    closures = caper._closure_split('Show Name S01 (E01 - E08) WEB-DL')
+
+    print closures
+
+    assert create_testable_closures(closures) == [
+        'Show Name S01',
+        '(E01 - E08)',
+        'WEB-DL'
+    ]
+
+    fragments = create_testable_closures(caper._fragment_split(closures))
+
+    print fragments
+
+    assert fragments == [
+        ('Show Name S01', [
+            'Show',
+            'Name',
+            'S01'
+        ]),
+        ('(E01 - E08)', [
+            'E01',
+            '-',
+            'E08'
+        ]),
+        ('WEB-DL', [
+            'WEB',
+            'DL'
         ])
     ]
