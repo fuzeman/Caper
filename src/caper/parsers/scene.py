@@ -61,7 +61,8 @@ PATTERN_GROUPS = [
             # Part.1.and.Part.3
             ('^Part$', '(?P<part>\d+)'),
 
-            r'(?P<extra>Special)'
+            r'(?P<extra>Special)',
+            r'(?P<country>NZ|AU|US|UK)'
         ]),
         (0.8, [
             # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years my mistake)
