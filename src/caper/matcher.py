@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from caper.helpers import is_list_type, update_dict
+from caper.helpers import is_list_type, update_dict, delta_seconds
 from datetime import datetime
 from logr import Logr
 import re
@@ -64,7 +64,7 @@ class FragmentMatcher(object):
 
                 self.regex[group_name].append((weight, weight_patterns))
 
-        Logr.info("Compiled %s patterns in %ss", compile_count, (datetime.now() - compile_start).total_seconds())
+        Logr.info("Compiled %s patterns in %ss", compile_count, delta_seconds(datetime.now() - compile_start))
 
     def find_group(self, name):
         for group_name, weight_groups in self.regex.items():
