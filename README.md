@@ -6,7 +6,9 @@ Extensible filename parsing library for Python
 
 ## Development
 
-**Dependencies**
+### Requirements
+
+**Python:** versions 2.6 - 3.3 supported
 
     Logr>=0.2.2
 
