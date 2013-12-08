@@ -10,6 +10,8 @@ Extensible filename parsing library for Python
 
 **Python:** versions 2.6 - 3.3 supported
 
+**Packages:**
+
     Logr>=0.2.2
 
 ## Testing
