@@ -60,6 +60,8 @@ PATTERN_GROUPS = [
             # Part.3
             # Part.1.and.Part.3
             ('^Part$', '(?P<part>\d+)'),
+
+            r'(?P<extra>Special)'
         ]),
         (0.8, [
             # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years my mistake)
@@ -71,6 +73,7 @@ PATTERN_GROUPS = [
             r'^(?P<season>([1-9])|([1-9][0-9]))(?P<episode>\d{2})$'
         ])
     ]),
+
     ('video', [
         r'(?P<aspect>FS|WS)',
 
