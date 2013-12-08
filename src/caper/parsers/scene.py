@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from logr import Logr
+from caper import FragmentMatcher
 from caper.parsers.base import Parser
 from caper.result import CaperFragmentNode
 
@@ -61,7 +62,8 @@ PATTERN_GROUPS = [
             # Part.1.and.Part.3
             ('^Part$', '(?P<part>\d+)'),
 
-            r'(?P<extra>Special)'
+            r'(?P<extra>Special)',
+            r'(?P<country>NZ|AU|US|UK)'
         ]),
         (0.8, [
             # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years my mistake)
@@ -157,8 +159,14 @@ PATTERN_GROUPS = [
 
 
 class SceneParser(Parser):
+    matcher = None
+
     def __init__(self, debug=False):
-        super(SceneParser, self).__init__(PATTERN_GROUPS, debug)
+        if not SceneParser.matcher:
+            SceneParser.matcher = FragmentMatcher(PATTERN_GROUPS)
+            Logr.info("Fragment matcher for %s created", self.__class__.__name__)
+
+        super(SceneParser, self).__init__(SceneParser.matcher, debug)
 
     def capture_group(self, fragment):
         if fragment.closure.index + 1 != len(self.closures):

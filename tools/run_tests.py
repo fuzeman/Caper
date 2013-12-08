@@ -90,7 +90,10 @@ class CaperTests(object):
 
             if arguments['pause']:
                 print "Press ENTER to continue testing"
-                raw_input()
+                try:
+                    raw_input()
+                except EOFError:
+                    return
 
 
 def raw_input_default(message, default=None):

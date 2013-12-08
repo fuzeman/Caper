@@ -19,7 +19,7 @@ from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
 
 
-__version_info__ = ('0', '2', '7')
+__version_info__ = ('0', '2', '8')
 __version_branch__ = 'master'
 
 __version__ = "%s%s" % (
@@ -44,9 +44,11 @@ CL_END = 1
 
 class Caper(object):
     def __init__(self, debug=False):
+        self.debug = debug
+
         self.parsers = {
-            'scene': SceneParser(debug),
-            'anime': AnimeParser(debug)
+            'scene': SceneParser,
+            'anime': AnimeParser
         }
 
     def _closure_split(self, name):
@@ -155,7 +157,7 @@ class Caper(object):
                     cur.value += ch
 
             # Finish parsing the last fragment
-            if cur.value != "":
+            if cur and cur.value:
                 end_fragment(closure.fragments, cur, cur_position)
 
                 # Reset
@@ -176,4 +178,4 @@ class Caper(object):
             raise ValueError("Unknown parser")
 
         # TODO autodetect the parser type
-        return self.parsers[parser].run(closures)
+        return self.parsers[parser](self.debug).run(closures)

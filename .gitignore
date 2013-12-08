@@ -6,3 +6,4 @@ tools/*.mysql
 /.coverage
 /out
 /tools/test_data
+*.lprof
