@@ -130,19 +130,13 @@ def test_fragment_extend():
 
     closures = caper._closure_split('Show Name S01 (E01 - E08) WEB-DL')
 
-    print closures
-
     assert create_testable_closures(closures) == [
         'Show Name S01',
         '(E01 - E08)',
         'WEB-DL'
     ]
 
-    fragments = create_testable_closures(caper._fragment_split(closures))
-
-    print fragments
-
-    assert fragments == [
+    assert create_testable_closures(caper._fragment_split(closures)) == [
         ('Show Name S01', [
             'Show',
             'Name',
