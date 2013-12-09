@@ -43,6 +43,17 @@ class CaperNode(object):
         raise NotImplementedError()
 
 
+class CaperRootNode(CaperNode):
+    def __init__(self, closure):
+        """
+        :type closure: caper.objects.CaperClosure or list of caper.objects.CaperClosure
+        """
+        super(CaperRootNode, self).__init__(closure)
+
+    def next(self):
+        return self.closure
+
+
 class CaperClosureNode(CaperNode):
     def __init__(self, closure, parent=None, tag=None, weight=None, match=None):
         """

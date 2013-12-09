@@ -17,6 +17,7 @@ from caper.matcher import FragmentMatcher
 from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
+from caper.parsers.usenet import UsenetParser
 
 
 __version_info__ = ('0', '2', '9')
@@ -47,8 +48,9 @@ class Caper(object):
         self.debug = debug
 
         self.parsers = {
+            'anime': AnimeParser,
             'scene': SceneParser,
-            'anime': AnimeParser
+            'usenet': UsenetParser
         }
 
     def _closure_split(self, name):
@@ -62,7 +64,7 @@ class Caper(object):
 
         def end_closure(closures, buf):
             buf = buf.strip(STRIP_CHARS)
-            if len(buf) < 1:
+            if len(buf) < 2:
                 return
 
             cur = CaperClosure(len(closures), buf)
@@ -173,6 +175,9 @@ class Caper(object):
         # Print closures
         for closure in closures:
             Logr.debug("closure [%s]", closure.value)
+
+            for fragment in closure.fragments:
+                Logr.debug("\tfragment [%s]", fragment.value)
 
         if parser not in self.parsers:
             raise ValueError("Unknown parser")
