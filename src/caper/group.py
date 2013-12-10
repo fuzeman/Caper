@@ -207,6 +207,7 @@ class CaptureGroup(object):
         if all([step.single and step.matched for step in self.steps]):
             Logr.debug('All steps completed, group finished')
             parent_node.finished_groups.append(self)
+            return nodes, match
 
         # Check post constraints
         broke, definite = self.check_constraints(self.post_constraints, parent_head, subject, match=match)
