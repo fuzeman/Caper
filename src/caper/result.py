@@ -114,6 +114,8 @@ class CaperResult(object):
 
         self.chains = []
 
+        self.captured_keys = []
+
     def build(self):
         max_matched = 0
 
@@ -152,15 +154,8 @@ class CaperResult(object):
                 result.append(node_chain)
                 continue
 
-            # Skip over closure nodes
-            if type(node) is CaperClosureNode:
-                result.extend(self.combine_chain(node.parent, node_chain))
-
-            # Parse fragment matches
-            if type(node) is CaperFragmentNode:
-                node_chain.update(node)
-
-                result.extend(self.combine_chain(node.parent, node_chain))
+            node_chain.update(node)
+            result.extend(self.combine_chain(node.parent, node_chain))
 
         return result
 
@@ -181,7 +176,10 @@ class CaperResultChain(object):
         if not subject.match or not subject.match.success:
             return
 
-        self.num_matched += len(subject.fragments) if subject.fragments is not None else 0
+        # TODO this should support closure nodes
+        if type(subject) is CaperFragmentNode:
+            self.num_matched += len(subject.fragments) if subject.fragments is not None else 0
+
         self.weights.append(subject.match.weight)
 
         if subject.match:

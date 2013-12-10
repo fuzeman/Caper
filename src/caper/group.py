@@ -34,10 +34,15 @@ class CaptureGroup(object):
 
         #: @type: list of CaptureStep
         self.steps = []
+
         #: type: str
         self.step_source = None
+
         #: @type: list of CaptureConstraint
-        self.constraints = []
+        self.pre_constraints = []
+
+        #: :type: list of CaptureConstraint
+        self.post_constraints = []
 
     def capture_fragment(self, tag, regex=None, func=None, single=True):
         Logr.debug('capture_fragment("%s", "%s", %s, %s)', tag, regex, func, single)
@@ -78,7 +83,22 @@ class CaptureGroup(object):
         return self
 
     def until(self, **kwargs):
-        self.constraints.append(CaptureConstraint(self, **kwargs))
+        self.pre_constraints.append(CaptureConstraint(self, 'match', **kwargs))
+
+        return self
+
+    def until_result(self, **kwargs):
+        self.pre_constraints.append(CaptureConstraint(self, 'result', **kwargs))
+
+        return self
+
+    def until_failure(self, **kwargs):
+        self.post_constraints.append(CaptureConstraint(self, 'failure', **kwargs))
+
+        return self
+
+    def until_success(self, **kwargs):
+        self.post_constraints.append(CaptureConstraint(self, 'success', **kwargs))
 
         return self
 
@@ -114,9 +134,9 @@ class CaptureGroup(object):
         # Branch if the match was indefinite (weight below 1.0)
         if match.result and match.weight < 1.0:
             if match.num_fragments == 1:
-                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None))
+                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head))
             else:
-                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None))
+                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head))
 
         nodes.append(result[0] if len(result) == 1 else result)
 
@@ -124,26 +144,47 @@ class CaptureGroup(object):
 
     def parse_closure(self, parent_head, subject):
         if self.step_source != 'closure':
-            Logr.debug('Closure encountered, jumping into fragments')
+            Logr.debug('Closure encountered on fragment step, jumping into fragments')
             return [CaperClosureNode(subject, parent_head)]
 
-        raise NotImplementedError()
+        parent_node = parent_head[0] if type(parent_head) is list else parent_head
+
+        nodes, match = self.match(parent_head, parent_node, subject)
+
+        # Capturing broke on constraint, return now
+        if not match:
+            return nodes
+
+        Logr.debug('created closure node with subject.value: "%s"' % subject.value)
+
+        result = [CaperClosureNode(
+            subject,
+            parent_head,
+            match
+        )]
+
+        # Branch if the match was indefinite (weight below 1.0)
+        if match.result and match.weight < 1.0:
+            if match.num_fragments == 1:
+                result.append(CaperClosureNode(subject, parent_head))
+            else:
+                nodes.append(CaperClosureNode(subject, parent_head))
+
+        if match.result:
+            for key in match.result:
+                self.result.captured_keys.append('%s.%s' % (match.tag, key))
+
+        nodes.append(result[0] if len(result) == 1 else result)
+
+        return nodes
 
     def match(self, parent_head, parent_node, subject):
         nodes = []
 
-        # Check constraints
-        for constraint in self.constraints:
-            weight, success = constraint.execute(subject)
-            if success:
-                Logr.debug('capturing broke on "%s" at %s', subject.value, constraint)
-                parent_node.finished_groups.append(self)
-                nodes.append(parent_head)
-
-                if weight == 1.0:
-                    return nodes, None
-                else:
-                    Logr.debug('Branching result')
+        # Check pre constaints
+        if self.check_constraints(self.pre_constraints, parent_head, subject):
+            nodes.append(parent_head)
+            return nodes, None
 
         # Try match subject against the steps available
         match = None
@@ -158,9 +199,38 @@ class CaptureGroup(object):
                 Logr.debug('Found match with weight %s, match: %s, num_fragments: %s' % (
                     match.weight, match.result, match.num_fragments
                 ))
+
+                step.matched = True
+
                 break
 
+        if all([step.single and step.matched for step in self.steps]):
+            Logr.debug('All steps completed, group finished')
+            parent_node.finished_groups.append(self)
+
+        # Check post constraints
+        if self.check_constraints(self.post_constraints, parent_head, subject, match=match):
+            return nodes, None
+
         return nodes, match
+
+    def check_constraints(self, constraints, parent_head, subject, **kwargs):
+        parent_node = parent_head[0] if type(parent_head) is list else parent_head
+
+        # Check constraints
+        for constraint in constraints:
+            weight, success = constraint.execute(subject, **kwargs)
+
+            if success:
+                Logr.debug('capturing broke on "%s" at %s', subject.value, constraint)
+                parent_node.finished_groups.append(self)
+
+                if weight == 1.0:
+                    return True
+                else:
+                    Logr.debug('Branching result')
+
+        return False
 
     def execute(self):
         heads_finished = None
@@ -180,14 +250,19 @@ class CaptureGroup(object):
                     heads_finished.append(True)
                     continue
 
+                Logr.debug('')
+
+                Logr.debug(node)
+
                 next_subject = node.next()
 
-                Logr.debug('')
                 Logr.debug('----------[%s] (%s)----------' % (next_subject, repr(next_subject.value) if next_subject else None))
 
                 if next_subject:
                     for node_result in self.parse_subject(head, next_subject):
                         self.result.heads.append(node_result)
+
+                    Logr.debug('Heads: %s', self.result.heads)
 
                 heads_finished.append(self in node.finished_groups or next_subject is None)
 
