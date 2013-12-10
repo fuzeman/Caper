@@ -29,8 +29,8 @@ __version__ = "%s%s" % (
 )
 
 
-CL_START_CHARS = ['(', '[']
-CL_END_CHARS = [')', ']']
+CL_START_CHARS = ['(', '[', '<', '>']
+CL_END_CHARS = [')', ']', '<', '>']
 
 STRIP_START_CHARS = ''.join(CL_START_CHARS)
 STRIP_END_CHARS = ''.join(CL_END_CHARS)

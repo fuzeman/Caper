@@ -19,11 +19,12 @@ from caper.parsers.base import Parser
 
 PATTERN_GROUPS = [
     ('usenet', [
-        r'.(?P<group>#[\w\.@]+).',
-        r'^.(?P<code>\d+).$',
-        r'.(?P<full>FULL).',
-        r'.\s?(?P<group>TOWN)\s?.',
-        r'.*?(?P<site>www\..*?\.\w+)\s?.'
+        r'\[(?P<group>#[\w\.@]+)\]',
+        r'^\[(?P<code>\w+)\]$',
+        r'\[(?P<full>FULL)\]',
+        r'\[\s?(?P<group>TOWN)\s?\]',
+        r'.*?(?P<site>www\..*?\.\w+)\s?.',
+        r'(?P<site>.*?\.(com|org|info))'
     ]),
 
     ('part', [
@@ -31,7 +32,7 @@ PATTERN_GROUPS = [
     ]),
 
     ('detail', [
-        r'[\s-]*\"(?P<file_name>.*?)\".*?(?P<extra>yEnc)'
+        r'[\s-]*\"(?P<file_name>.*?)\"[\s-]*(?P<size>[\d,\.]*\s?MB)?[\s-]*?(?P<extra>yEnc)',
     ])
 ]
 
@@ -53,12 +54,42 @@ class UsenetParser(Parser):
 
         self.setup(closures)
 
+        # Capture usenet or part info until we get a part or matching fails
         self.capture_closure('usenet', regex='usenet', single=False)\
             .capture_closure('part', regex='part', single=True) \
             .until_result(tag='part') \
             .until_failure()\
             .execute()
 
+        is_town_release, has_part = self.get_state()
+
+        if not is_town_release:
+            self.capture_release_name()
+
+        # If we already have the part (TOWN releases), ignore matching part again
+        if not is_town_release and not has_part:
+            self.capture_fragment('part', regex='part', single=True) \
+                .until_success()\
+                .execute()
+
+        # Capture any leftover details
+        self.capture_closure('detail', regex='detail', single=False)\
+            .execute()
+
+        self.result.build()
+        return self.result
+
+    def capture_release_name(self):
+        self.capture_closure('detail', regex='detail', single=False) \
+            .until_failure() \
+            .execute()
+
+        self.capture_fragment('release_name', single=False) \
+            .until(fragment__re='part') \
+            .until(fragment__re='usenet') \
+            .execute()
+
+    def get_state(self):
         # TODO multiple-chains?
         is_town_release = False
         has_part = False
@@ -70,20 +101,4 @@ class UsenetParser(Parser):
             if tag == 'part':
                 has_part = True
 
-        # TOWN usenet releases do not contain release names
-        if not is_town_release:
-            self.capture_fragment('release_name', single=False)\
-                .until(fragment__re='part')\
-                .execute()
-
-        # If we already have the part (TOWN releases), ignore matching part again
-        if not is_town_release and not has_part:
-            self.capture_fragment('part', regex='part', single=True) \
-                .until_success()\
-                .execute()
-
-        self.capture_closure('detail', regex='detail', single=False)\
-            .execute()
-
-        self.result.build()
-        return self.result
+        return is_town_release, has_part
