@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from caper.objects import CaptureMatch
 from logr import Logr
 
 
@@ -34,21 +35,26 @@ class CaptureStep(object):
         self.single = single
 
     def execute(self, fragment):
+        """Execute step on fragment
+
+        :rtype : CaptureMatch
+        """
+
         if self.regex:
             weight, match, num_fragments = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
             Logr.debug('(execute) [regex] tag: "%s"', self.tag)
             if match:
-                return True, weight, match, num_fragments
+                return CaptureMatch(True, weight, match, num_fragments, self.tag)
         elif self.func:
             match = self.func(fragment)
             Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
             if match:
-                return True, 1.0, match, 1
+                return CaptureMatch(True, 1.0, match, 1, self.tag)
         else:
             Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
-            return True, 1.0, fragment.value, 1
+            return CaptureMatch(True, 1.0, fragment.value, 1, self.tag)
 
-        return False, None, None, 1
+        return CaptureMatch(False, None, None, 1, self.tag)
 
     def __repr__(self):
         attribute_values = [key + '=' + repr(getattr(self, key))

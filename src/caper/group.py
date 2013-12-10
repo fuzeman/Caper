@@ -14,7 +14,7 @@
 
 
 from logr import Logr
-from caper import CaperClosure
+from caper import CaperClosure, CaperFragment
 from caper.helpers import clean_dict
 from caper.result import CaperFragmentNode, CaperClosureNode
 from caper.step import CaptureStep
@@ -34,11 +34,19 @@ class CaptureGroup(object):
 
         #: @type: list of CaptureStep
         self.steps = []
+        #: type: str
+        self.step_source = None
         #: @type: list of CaptureConstraint
         self.constraints = []
 
     def capture_fragment(self, tag, regex=None, func=None, single=True):
         Logr.debug('capture_fragment("%s", "%s", %s, %s)', tag, regex, func, single)
+
+        if self.step_source != 'fragment':
+            if self.step_source is None:
+                self.step_source = 'fragment'
+            else:
+                raise ValueError("Unable to mix fragment and closure capturing in a group")
 
         self.steps.append(CaptureStep(
             self, tag,
@@ -52,6 +60,12 @@ class CaptureGroup(object):
 
     def capture_closure(self, tag, regex=None, func=None, single=True):
         Logr.debug('capture_closure("%s", "%s", %s, %s)', tag, regex, func, single)
+
+        if self.step_source != 'closure':
+            if self.step_source is None:
+                self.step_source = 'closure'
+            else:
+                raise ValueError("Unable to mix fragment and closure capturing in a group")
 
         self.steps.append(CaptureStep(
             self, tag,
@@ -69,12 +83,53 @@ class CaptureGroup(object):
         return self
 
     def parse_subject(self, parent_head, subject):
+        Logr.debug("parse_subject (%s) subject: %s", self.step_source, repr(subject))
+
+        if type(subject) is CaperClosure:
+            return self.parse_closure(parent_head, subject)
+
+        if type(subject) is CaperFragment:
+            return self.parse_fragment(parent_head, subject)
+
+        raise ValueError('Unknown subject (%s)', subject)
+
+    def parse_fragment(self, parent_head, subject):
         parent_node = parent_head[0] if type(parent_head) is list else parent_head
 
-        # TODO just jumping into closures for now, will be fixed later
-        if type(subject) is CaperClosure:
+        nodes, match = self.match(parent_head, parent_node, subject)
+
+        # Capturing broke on constraint, return now
+        if not match:
+            return nodes
+
+        Logr.debug('created fragment node with subject.value: "%s"' % subject.value)
+
+        result = [CaperFragmentNode(
+            parent_node.closure,
+            subject.take_right(match.num_fragments),
+            parent_head,
+            match
+        )]
+
+        # Branch if the match was indefinite (weight below 1.0)
+        if match.result and match.weight < 1.0:
+            if match.num_fragments == 1:
+                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None))
+            else:
+                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None))
+
+        nodes.append(result[0] if len(result) == 1 else result)
+
+        return nodes
+
+    def parse_closure(self, parent_head, subject):
+        if self.step_source != 'closure':
+            Logr.debug('Closure encountered, jumping into fragments')
             return [CaperClosureNode(subject, parent_head)]
 
+        raise NotImplementedError()
+
+    def match(self, parent_head, parent_node, subject):
         nodes = []
 
         # Check constraints
@@ -86,33 +141,26 @@ class CaptureGroup(object):
                 nodes.append(parent_head)
 
                 if weight == 1.0:
-                    return nodes
+                    return nodes, None
                 else:
                     Logr.debug('Branching result')
 
         # Try match subject against the steps available
-        tag, success, weight, match, num_fragments = (None, None, None, None, None)
+        match = None
+
         for step in self.steps:
-            tag = step.tag
-            success, weight, match, num_fragments = step.execute(subject)
-            if success:
-                match = clean_dict(match) if type(match) is dict else match
-                Logr.debug('Found match with weight %s, match: %s, num_fragments: %s' % (weight, match, num_fragments))
+            match = step.execute(subject)
+
+            if match.success:
+                if type(match.result) is dict:
+                    match.result = clean_dict(match.result)
+
+                Logr.debug('Found match with weight %s, match: %s, num_fragments: %s' % (
+                    match.weight, match.result, match.num_fragments
+                ))
                 break
 
-        Logr.debug('created fragment node with subject.value: "%s"' % subject.value)
-
-        result = [CaperFragmentNode(parent_node.closure, subject.take_right(num_fragments), parent_head, tag, weight, match)]
-
-        if match and weight < 1.0:
-            if num_fragments == 1:
-                result.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, None, None))
-            else:
-                nodes.append(CaperFragmentNode(parent_node.closure, [subject], parent_head, None, None, None))
-
-        nodes.append(result[0] if len(result) == 1 else result)
-
-        return nodes
+        return nodes, match
 
     def execute(self):
         heads_finished = None
@@ -126,8 +174,6 @@ class CaptureGroup(object):
             for head in heads:
                 node = head[0] if type(head) is list else head
 
-                Logr.debug("head node: %s" % node)
-
                 if self in node.finished_groups:
                     Logr.debug("head finished for group")
                     self.result.heads.append(head)
@@ -135,6 +181,9 @@ class CaptureGroup(object):
                     continue
 
                 next_subject = node.next()
+
+                Logr.debug('')
+                Logr.debug('----------[%s] (%s)----------' % (next_subject, repr(next_subject.value) if next_subject else None))
 
                 if next_subject:
                     for node_result in self.parse_subject(head, next_subject):

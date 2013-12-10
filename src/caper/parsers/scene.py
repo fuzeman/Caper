@@ -222,7 +222,9 @@ class SceneParser(Parser):
                 Logr.debug(head[0].closure.value)
 
             for node in head:
-                Logr.debug('\t' + str(node).ljust(55) + '\t' + str(node.weight) + '\t' + str(node.match))
+                Logr.debug('\t' + str(node).ljust(55) + '\t' + (
+                    str(node.match.weight) + '\t' + str(node.match.result)
+                ) if node.match else '')
 
             if len(head) > 0 and head[0].parent:
                 self.print_tree([head[0].parent])

@@ -79,3 +79,21 @@ class CaperFragment(object):
 
     def take_right(self, count, include_self=True):
         return self.take('right', count, include_self)
+
+
+class CaptureMatch(object):
+    def __init__(self, success, weight, result, num_fragments, tag):
+        #: :type: bool
+        self.success = success
+
+        #: :type: float
+        self.weight = weight
+
+        #: :type: dict or str
+        self.result = result
+
+        #: :type: int
+        self.num_fragments = num_fragments
+
+        #: :type: str
+        self.tag = tag
