@@ -31,7 +31,7 @@ PATTERN_GROUPS = [
     ]),
 
     ('detail', [
-        r'[\s-]*\"(?P<file_name>.*?)\"(\s(?P<extra>yEnc))?'
+        r'[\s-]*\"(?P<file_name>.*?)\".*?(?P<extra>yEnc)'
     ])
 ]
 
@@ -59,13 +59,28 @@ class UsenetParser(Parser):
             .until_failure()\
             .execute()
 
-        self.capture_fragment('release_name', single=False)\
-            .until(fragment__re='part')\
-            .execute()
+        # TODO multiple-chains?
+        is_town_release = False
+        has_part = False
 
-        self.capture_fragment('part', regex='part', single=True)\
-            .until_success()\
-            .execute()
+        for tag, result in self.result.heads[0].captured():
+            if tag == 'usenet' and result.get('group') == 'TOWN':
+                is_town_release = True
+
+            if tag == 'part':
+                has_part = True
+
+        # TOWN usenet releases do not contain release names
+        if not is_town_release:
+            self.capture_fragment('release_name', single=False)\
+                .until(fragment__re='part')\
+                .execute()
+
+        # If we already have the part (TOWN releases), ignore matching part again
+        if not is_town_release and not has_part:
+            self.capture_fragment('part', regex='part', single=True) \
+                .until_success()\
+                .execute()
 
         self.capture_closure('detail', regex='detail', single=False)\
             .execute()

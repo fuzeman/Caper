@@ -92,11 +92,11 @@ class CaptureConstraint(object):
 
         ckey = self.kwargs.get('key')
 
-        for tag, keys in parent_node.captured():
+        for tag, result in parent_node.captured():
             if tag != ctag:
                 continue
 
-            if not ckey or ckey in keys:
+            if not ckey or ckey in result.keys():
                 return 1.0, True
 
         return 0.0, False
@@ -108,8 +108,8 @@ class CaptureConstraint(object):
         return 0, False
 
     def constraint_success(self, parent_node, fragment, match):
-        #if match and match.success:
-        #    return 1.0, True
+        if match and match.success:
+            return 1.0, True
 
         return 0, False
 

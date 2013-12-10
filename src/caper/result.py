@@ -45,13 +45,13 @@ class CaperNode(object):
         cur = self
 
         if cur.match:
-            yield cur.match.tag, cur.match.result.keys()
+            yield cur.match.tag, cur.match.result
 
         while cur.parent:
             cur = cur.parent
 
             if cur.match:
-                yield cur.match.tag, cur.match.result.keys()
+                yield cur.match.tag, cur.match.result
 
 
 class CaperRootNode(CaperNode):
