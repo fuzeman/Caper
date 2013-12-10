@@ -82,7 +82,7 @@ class CaperFragment(object):
 
 
 class CaptureMatch(object):
-    def __init__(self, success, weight, result, num_fragments, tag):
+    def __init__(self, tag, step, success=False, weight=None, result=None, num_fragments=1):
         #: :type: bool
         self.success = success
 
@@ -97,3 +97,12 @@ class CaptureMatch(object):
 
         #: :type: str
         self.tag = tag
+
+        #: :type: CaptureStep
+        self.step = step
+
+    def __str__(self):
+        return "<CaperMatch result: %s>" % repr(self.result)
+
+    def __repr__(self):
+        return self.__str__()

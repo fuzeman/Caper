@@ -34,27 +34,48 @@ class CaptureStep(object):
         #: @type: bool
         self.single = single
 
+        self.matched = False
+
     def execute(self, fragment):
         """Execute step on fragment
 
         :rtype : CaptureMatch
         """
 
+        match = CaptureMatch(self.tag, self)
+
         if self.regex:
-            weight, match, num_fragments = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
+            weight, result, num_fragments = self.capture_group.parser.matcher.fragment_match(fragment, self.regex)
             Logr.debug('(execute) [regex] tag: "%s"', self.tag)
-            if match:
-                return CaptureMatch(True, weight, match, num_fragments, self.tag)
+
+            if not result:
+                return match
+
+            # Populate CaptureMatch
+            match.success = True
+            match.weight = weight
+            match.result = result
+            match.num_fragments = num_fragments
         elif self.func:
-            match = self.func(fragment)
+            result = self.func(fragment)
             Logr.debug('(execute) [func] %s += "%s"', self.tag, match)
-            if match:
-                return CaptureMatch(True, 1.0, match, 1, self.tag)
+
+            if not result:
+                return match
+
+            # Populate CaptureMatch
+            match.success = True
+            match.weight = 1.0
+            match.result = result
         else:
             Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
-            return CaptureMatch(True, 1.0, fragment.value, 1, self.tag)
 
-        return CaptureMatch(False, None, None, 1, self.tag)
+            # Populate CaptureMatch
+            match.success = True
+            match.weight = 1.0
+            match.result = fragment.value
+
+        return match
 
     def __repr__(self):
         attribute_values = [key + '=' + repr(getattr(self, key))
