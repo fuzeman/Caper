@@ -170,13 +170,6 @@ class CaptureGroup(object):
             else:
                 nodes.append(CaperClosureNode(subject, parent_head))
 
-        if match.result:
-            if match.tag not in self.result.captured:
-                self.result.captured[match.tag] = []
-
-            for key in match.result:
-                self.result.captured[match.tag].append(key)
-
         nodes.append(result[0] if len(result) == 1 else result)
 
         return nodes
@@ -227,7 +220,7 @@ class CaptureGroup(object):
 
         # Check constraints
         for constraint in constraints:
-            weight, success = constraint.execute(subject, **kwargs)
+            weight, success = constraint.execute(parent_node, subject, **kwargs)
 
             if success:
                 Logr.debug('capturing broke on "%s" at %s', subject.value, constraint)

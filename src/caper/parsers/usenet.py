@@ -31,7 +31,7 @@ PATTERN_GROUPS = [
     ]),
 
     ('detail', [
-        r'[\s-]*\"(?P<file_name>.*?)\"(\sy(?P<extra>yEnc))?'
+        r'[\s-]*\"(?P<file_name>.*?)\"(\s(?P<extra>yEnc))?'
     ])
 ]
 
@@ -55,7 +55,7 @@ class UsenetParser(Parser):
 
         self.capture_closure('usenet', regex='usenet', single=False)\
             .capture_closure('part', regex='part', single=True) \
-            .until_result(key='part') \
+            .until_result(tag='part') \
             .until_failure()\
             .execute()
 

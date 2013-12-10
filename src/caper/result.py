@@ -41,6 +41,18 @@ class CaperNode(object):
     def next(self):
         raise NotImplementedError()
 
+    def captured(self):
+        cur = self
+
+        if cur.match:
+            yield cur.match.tag, cur.match.result.keys()
+
+        while cur.parent:
+            cur = cur.parent
+
+            if cur.match:
+                yield cur.match.tag, cur.match.result.keys()
+
 
 class CaperRootNode(CaperNode):
     def __init__(self, closure):
@@ -113,8 +125,6 @@ class CaperResult(object):
         self.heads = []
 
         self.chains = []
-
-        self.captured = {}
 
     def build(self):
         max_matched = 0

@@ -66,15 +66,15 @@ class CaptureConstraint(object):
         else:
             raise ValueError("Unable to find attribute with name '%s'" % name)
 
-    def execute(self, fragment, **kwargs):
+    def execute(self, parent_node, fragment, **kwargs):
         func_name = 'constraint_%s' % self.constraint_type
 
         if hasattr(self, func_name):
-            return getattr(self, func_name)(fragment, **kwargs)
+            return getattr(self, func_name)(parent_node, fragment, **kwargs)
 
         raise ValueError('Unknown constraint type "%s"' % self.constraint_type)
 
-    def constraint_match(self, fragment):
+    def constraint_match(self, parent_node, fragment):
         results = []
         total_weight = 0
 
@@ -85,27 +85,29 @@ class CaptureConstraint(object):
 
         return total_weight / (float(len(results)) or 1), all(results) if len(results) > 0 else False
 
-    def constraint_result(self, fragment):
-        tag = self.kwargs.get('tag')
-        key = self.kwargs.get('key')
-
-        if not tag or not key:
+    def constraint_result(self, parent_node, fragment):
+        ctag = self.kwargs.get('tag')
+        if not ctag:
             return 0, False
 
-        captured = self.capture_group.result.captured
+        ckey = self.kwargs.get('key')
 
-        if tag not in captured or key not in captured[tag]:
-            return 0, False
+        for tag, keys in parent_node.captured():
+            if tag != ctag:
+                continue
 
-        return 1.0, True
+            if not ckey or ckey in keys:
+                return 1.0, True
 
-    def constraint_failure(self, fragment, match):
+        return 0.0, False
+
+    def constraint_failure(self, parent_node, fragment, match):
         if not match or not match.success:
             return 1.0, True
 
         return 0, False
 
-    def constraint_success(self, fragment, match):
+    def constraint_success(self, parent_node, fragment, match):
         #if match and match.success:
         #    return 1.0, True
 
