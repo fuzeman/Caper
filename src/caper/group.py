@@ -182,9 +182,13 @@ class CaptureGroup(object):
         nodes = []
 
         # Check pre constaints
-        if self.check_constraints(self.pre_constraints, parent_head, subject):
+        broke, definite = self.check_constraints(self.pre_constraints, parent_head, subject)
+
+        if broke:
             nodes.append(parent_head)
-            return nodes, None
+
+            if definite:
+                return nodes, None
 
         # Try match subject against the steps available
         match = None
@@ -209,7 +213,8 @@ class CaptureGroup(object):
             parent_node.finished_groups.append(self)
 
         # Check post constraints
-        if self.check_constraints(self.post_constraints, parent_head, subject, match=match):
+        broke, definite = self.check_constraints(self.post_constraints, parent_head, subject, match=match)
+        if broke:
             return nodes, None
 
         return nodes, match
@@ -225,12 +230,9 @@ class CaptureGroup(object):
                 Logr.debug('capturing broke on "%s" at %s', subject.value, constraint)
                 parent_node.finished_groups.append(self)
 
-                if weight == 1.0:
-                    return True
-                else:
-                    Logr.debug('Branching result')
+                return True, weight == 1.0
 
-        return False
+        return False, None
 
     def execute(self):
         heads_finished = None
