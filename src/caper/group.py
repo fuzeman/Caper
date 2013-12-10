@@ -171,8 +171,11 @@ class CaptureGroup(object):
                 nodes.append(CaperClosureNode(subject, parent_head))
 
         if match.result:
+            if match.tag not in self.result.captured:
+                self.result.captured[match.tag] = []
+
             for key in match.result:
-                self.result.captured_keys.append('%s.%s' % (match.tag, key))
+                self.result.captured[match.tag].append(key)
 
         nodes.append(result[0] if len(result) == 1 else result)
 

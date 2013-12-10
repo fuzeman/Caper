@@ -86,12 +86,15 @@ class CaptureConstraint(object):
         return total_weight / (float(len(results)) or 1), all(results) if len(results) > 0 else False
 
     def constraint_result(self, fragment):
+        tag = self.kwargs.get('tag')
         key = self.kwargs.get('key')
-        if not key:
+
+        if not tag or not key:
             return 0, False
 
-        captured_keys = self.capture_group.result.captured_keys
-        if key not in captured_keys:
+        captured = self.capture_group.result.captured
+
+        if tag not in captured or key not in captured[tag]:
             return 0, False
 
         return 1.0, True

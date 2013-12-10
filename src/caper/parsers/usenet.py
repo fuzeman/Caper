@@ -20,14 +20,14 @@ from caper.parsers.base import Parser
 PATTERN_GROUPS = [
     ('usenet', [
         r'.(?P<group>#[\w\.@]+).',
-        r'.(?P<code>\d+).',
+        r'^.(?P<code>\d+).$',
         r'.(?P<full>FULL).',
         r'.\s?(?P<group>TOWN)\s?.',
         r'.*?(?P<site>www\..*?\.\w+)\s?.'
     ]),
 
     ('part', [
-        r'(?P<current>\d+)/(?P<total>\d+)'
+        r'.?(?P<current>\d+)/(?P<total>\d+).?'
     ]),
 
     ('detail', [
@@ -54,6 +54,8 @@ class UsenetParser(Parser):
         self.setup(closures)
 
         self.capture_closure('usenet', regex='usenet', single=False)\
+            .capture_closure('part', regex='part', single=True) \
+            .until_result(key='part') \
             .until_failure()\
             .execute()
 

@@ -114,7 +114,7 @@ class CaperResult(object):
 
         self.chains = []
 
-        self.captured_keys = []
+        self.captured = {}
 
     def build(self):
         max_matched = 0
