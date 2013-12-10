@@ -31,6 +31,12 @@ class CaperClosure(object):
         #: :type: list of CaperFragment
         self.fragments = []
 
+    def __str__(self):
+        return "<CaperClosure value: %s" % repr(self.value)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class CaperFragment(object):
     def __init__(self, closure=None):
@@ -79,6 +85,12 @@ class CaperFragment(object):
 
     def take_right(self, count, include_self=True):
         return self.take('right', count, include_self)
+
+    def __str__(self):
+        return "<CaperFragment value: %s" % repr(self.value)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class CaptureMatch(object):

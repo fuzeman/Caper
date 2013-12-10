@@ -73,6 +73,12 @@ class CaperClosureNode(CaperNode):
 
         return None
 
+    def __str__(self):
+        return "<CaperClosureNode match: %s>" % repr(self.match)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class CaperFragmentNode(CaperNode):
     def __init__(self, closure, fragments, parent=None, match=None):
@@ -93,6 +99,12 @@ class CaperFragmentNode(CaperNode):
             return self.closure.right
 
         return None
+
+    def __str__(self):
+        return "<CaperFragmentNode match: %s>" % repr(self.match)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class CaperResult(object):
