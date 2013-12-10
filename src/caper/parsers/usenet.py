@@ -19,11 +19,19 @@ from caper.parsers.base import Parser
 
 PATTERN_GROUPS = [
     ('usenet', [
-        r'(?P<group>#\W+)'
+        r'.(?P<group>#[\w\.@]+).',
+        r'.(?P<code>\d+).',
+        r'.(?P<full>FULL).',
+        r'.\s?(?P<group>TOWN)\s?.',
+        r'.*?(?P<site>www\..*?\.\w+)\s?.'
     ]),
 
     ('part', [
         r'(?P<current>\d+)/(?P<total>\d+)'
+    ]),
+
+    ('detail', [
+        r'[\s-]*\"(?P<file_name>.*?)\"(\sy(?P<extra>yEnc))?'
     ])
 ]
 
@@ -46,7 +54,7 @@ class UsenetParser(Parser):
         self.setup(closures)
 
         self.capture_closure('usenet', regex='usenet', single=False)\
-            .until(closure__re='usenet.group')\
+            .until_failure()\
             .execute()
 
         self.capture_fragment('release_name', single=False)\
@@ -54,6 +62,10 @@ class UsenetParser(Parser):
             .execute()
 
         self.capture_fragment('part', regex='part', single=True)\
+            .until_success()\
+            .execute()
+
+        self.capture_closure('detail', regex='detail', single=False)\
             .execute()
 
         self.result.build()
