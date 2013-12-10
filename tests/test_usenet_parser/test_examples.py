@@ -71,3 +71,15 @@ def test_town_style():
     assert_that(result, has_info('usenet', {'group': 'TOWN'}))
     assert_that(result, has_info('usenet', {'site': 'www.example.org'}))
     assert_that(result, has_info('usenet', {'site': 'www.example.com'}))
+
+
+# TODO this isn't supported *yet*
+# def test_bare():
+#     result = caper.parse(
+#         '[01/18] - "Show.Name.S03E05.HDTV.x264-GROUP.par2" yEnc',
+#         'usenet'
+#     )
+#
+#     assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2', 'extra': 'yEnc'}))
+#
+#     assert_that(result, has_info('part', {'current': '01', 'total': '18'}))
