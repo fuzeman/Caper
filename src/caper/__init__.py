@@ -31,6 +31,7 @@ __version__ = "%s%s" % (
 
 CL_START_CHARS = ['(', '[', '<', '>']
 CL_END_CHARS = [')', ']', '<', '>']
+CL_END_STRINGS = [' - ']
 
 STRIP_START_CHARS = ''.join(CL_START_CHARS)
 STRIP_END_CHARS = ''.join(CL_END_CHARS)
@@ -78,6 +79,7 @@ class Caper(object):
         state = CL_START
         buf = ""
         for x, ch in enumerate(name):
+            # Check for start characters
             if state == CL_START and ch in CL_START_CHARS:
                 end_closure(closures, buf)
 
@@ -87,7 +89,14 @@ class Caper(object):
             buf += ch
 
             if state == CL_END and ch in CL_END_CHARS:
+                # End character found, create the closure
                 end_closure(closures, buf)
+
+                state = CL_START
+                buf = ""
+            elif state == CL_START and buf[-3:] in CL_END_STRINGS:
+                # End string found, create the closure
+                end_closure(closures, buf[:-3])
 
                 state = CL_START
                 buf = ""
