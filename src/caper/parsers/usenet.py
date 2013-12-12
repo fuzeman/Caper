@@ -23,8 +23,8 @@ PATTERN_GROUPS = [
         r'^\[(?P<code>\w+)\]$',
         r'\[(?P<full>FULL)\]',
         r'\[\s?(?P<group>TOWN)\s?\]',
-        r'.*?(?P<site>www\..*?\.\w+)\s?.',
-        r'(?P<site>.*?\.(com|org|info))'
+        r'(.*?\s)?[_\W]*(?P<site>www\..*?\.[a-z0-9]+)[_\W]*(.*?\s)?',
+        r'(.*?\s)?[_\W]*(?P<site>(www\.)?[-\w]+\.(com|org|info))[_\W]*(.*?\s)?'
     ]),
 
     ('part', [
