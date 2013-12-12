@@ -87,8 +87,9 @@ class UsenetParser(Parser):
             .execute()
 
         self.capture_fragment('release_name', single=False) \
-            .until(fragment__re='part') \
-            .until(fragment__re='usenet') \
+            .until_closure(node__re='usenet') \
+            .until_closure(node__re='detail') \
+            .until_closure(node__re='part') \
             .execute()
 
     def get_state(self):

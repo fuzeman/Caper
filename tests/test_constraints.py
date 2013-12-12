@@ -62,7 +62,7 @@ def test_fragment_constraint():
     # Capture show name until we hit the identifier
     group = CaptureGroup(parser, parser.result)\
         .capture_fragment('show_name', single=False)\
-        .until(fragment__re='identifier')
+        .until_fragment(node__re='identifier')
 
     # TODO test CaptureStep.__repr__ properly
     repr(group.steps)
@@ -84,7 +84,7 @@ def test_pattern_constraint():
     # Capture show name until we hit the identifier
     CaptureGroup(parser, parser.result) \
         .capture_fragment('show_name', single=False) \
-        .until(right_sep__re=re.compile('^-$')) \
+        .until_fragment(right_sep__re=re.compile('^-$')) \
         .execute()
 
     # Build the result from tree
@@ -102,7 +102,7 @@ def test_value_constraint():
     # Capture show name until we hit the identifier
     CaptureGroup(parser, parser.result) \
         .capture_fragment('show_name', single=False) \
-        .until(value__re='identifier') \
+        .until_fragment(value__re='identifier') \
         .execute()
 
     # Build the result from tree
@@ -121,10 +121,10 @@ def test_invalid_attribute():
     with pytest.raises(ValueError) as exc:
         CaptureGroup(parser, parser.result) \
             .capture_fragment('show_name', single=False) \
-            .until(blah__re='identifier') \
+            .until_fragment(blah__re='identifier') \
             .execute()
 
     assert_that(
         str(exc.value),
-        equal_to("Unable to find attribute with name 'blah'")
+        equal_to("Unknown constraint match type 'blah'")
     )

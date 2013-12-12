@@ -82,8 +82,13 @@ class CaptureGroup(object):
 
         return self
 
-    def until(self, **kwargs):
-        self.pre_constraints.append(CaptureConstraint(self, 'match', **kwargs))
+    def until_closure(self, **kwargs):
+        self.pre_constraints.append(CaptureConstraint(self, 'match', target='closure', **kwargs))
+
+        return self
+
+    def until_fragment(self, **kwargs):
+        self.pre_constraints.append(CaptureConstraint(self, 'match', target='fragment', **kwargs))
 
         return self
 
@@ -143,10 +148,6 @@ class CaptureGroup(object):
         return nodes
 
     def parse_closure(self, parent_head, subject):
-        if self.step_source != 'closure':
-            Logr.debug('Closure encountered on fragment step, jumping into fragments')
-            return [CaperClosureNode(subject, parent_head)]
-
         parent_node = parent_head[0] if type(parent_head) is list else parent_head
 
         nodes, match = self.match(parent_head, parent_node, subject)
@@ -190,6 +191,12 @@ class CaptureGroup(object):
         match = None
 
         for step in self.steps:
+            if step.source == 'closure' and type(subject) is not CaperClosure:
+                pass
+            elif step.source == 'fragment' and type(subject) is CaperClosure:
+                Logr.debug('Closure encountered on fragment step, jumping into fragments')
+                return [CaperClosureNode(subject, parent_head, None)], None
+
             match = step.execute(subject)
 
             if match.success:
@@ -220,7 +227,9 @@ class CaptureGroup(object):
         parent_node = parent_head[0] if type(parent_head) is list else parent_head
 
         # Check constraints
-        for constraint in constraints:
+        for constraint in [c for c in constraints if c.target == subject.__key__ or not c.target]:
+            Logr.debug("Testing constraint %s against subject %s", repr(constraint), repr(subject))
+
             weight, success = constraint.execute(parent_node, subject, **kwargs)
 
             if success:

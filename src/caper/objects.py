@@ -16,6 +16,8 @@ from caper.helpers import xrange_six
 
 
 class CaperClosure(object):
+    __key__ = 'closure'
+
     def __init__(self, index, value):
         #: :type: int
         self.index = index
@@ -60,6 +62,8 @@ class CaperClosure(object):
 
 
 class CaperFragment(object):
+    __key__ = 'fragment'
+
     def __init__(self, closure=None):
         #: :type: CaperClosure
         self.closure = closure
