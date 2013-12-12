@@ -70,26 +70,34 @@ class UsenetParser(Parser):
 
         # If we already have the part (TOWN releases), ignore matching part again
         if not is_town_release and not has_part:
-            self.capture_fragment('part', regex='part', single=True) \
+            self.capture_fragment('part', regex='part', single=True)\
+                .until_closure(node__re='usenet')\
                 .until_success()\
                 .execute()
 
         # Capture any leftover details
-        self.capture_closure('detail', regex='detail', single=False)\
+        self.capture_closure('usenet', regex='usenet', single=False)\
+            .capture_closure('detail', regex='detail', single=False)\
             .execute()
 
         self.result.build()
         return self.result
 
     def capture_release_name(self):
-        self.capture_closure('detail', regex='detail', single=False) \
-            .until_failure() \
+        self.capture_closure('detail', regex='detail', single=False)\
+            .until_failure()\
             .execute()
 
         self.capture_fragment('release_name', single=False) \
             .until_closure(node__re='usenet') \
             .until_closure(node__re='detail') \
             .until_closure(node__re='part') \
+            .until_fragment(value__eq='-')\
+            .execute()
+
+        # Capture any detail after the release name
+        self.capture_closure('detail', regex='detail', single=False)\
+            .until_failure()\
             .execute()
 
     def get_state(self):

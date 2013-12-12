@@ -82,3 +82,12 @@ def test_bare():
 
     assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2', 'extra': 'yEnc'}))
     assert_that(result, has_info('part', {'current': '01', 'total': '18'}))
+
+    result = caper.parse(
+        'Show.Name.S03E05.HDTV.x264-GROUP - "Show.Name.S03E05.HDTV.x264-GROUP.par2" yEnc',
+        'usenet'
+    )
+
+    assert_that(result, has_info('release_name', ['Show', 'Name', 'S03E05', 'HDTV', 'x264', 'GROUP']))
+
+    assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2', 'extra': 'yEnc'}))
