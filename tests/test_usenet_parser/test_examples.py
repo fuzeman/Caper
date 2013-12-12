@@ -89,5 +89,17 @@ def test_bare():
     )
 
     assert_that(result, has_info('release_name', ['Show', 'Name', 'S03E05', 'HDTV', 'x264', 'GROUP']))
-
     assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2', 'extra': 'yEnc'}))
+
+
+def test_ugly():
+    result = caper.parse(
+        '< Show.Name.S01E01.GERMAN.ABCD.WS.XViD-GROUP > >example.org< - - "grp-showname-s01e01-xvid-sample.avi" yEnc',
+        'usenet'
+    )
+
+    assert_that(result, has_info('release_name', ['Show', 'Name', 'S01E01', 'GERMAN', 'ABCD', 'WS', 'XViD', 'GROUP']))
+
+    assert_that(result, has_info('usenet', {'site': 'example.org'}))
+
+    assert_that(result, has_info('detail', {'file_name': 'grp-showname-s01e01-xvid-sample.avi', 'extra': 'yEnc'}))
