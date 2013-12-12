@@ -27,7 +27,9 @@ class HasInfo(BaseMatcher):
         if self.group not in item.chains[0].info:
             return False
 
-        return self.match in item.chains[0].info[self.group]
+        value = item.chains[0].info[self.group]
+
+        return self.match in value or self.match == value
 
     def describe_to(self, description):
         description.append_text('result with the group ')\

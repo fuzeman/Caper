@@ -41,7 +41,7 @@ def test_matcher_construction():
         ])
     ])
 
-    assert matcher.find_group('test2') is None
+    assert matcher.find_group('test2') == (None, None)
 
 
 def test_fragment_match():

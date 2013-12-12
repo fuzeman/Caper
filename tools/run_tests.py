@@ -46,7 +46,7 @@ class CaperTests(object):
             raise Exception()
 
         with open(filename) as fp:
-            reader = csv.reader(fp)
+            reader = csv.reader(fp, escapechar='|')
 
             self._read_header(reader)
 
