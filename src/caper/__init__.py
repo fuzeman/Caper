@@ -20,7 +20,7 @@ from caper.parsers.scene import SceneParser
 from caper.parsers.usenet import UsenetParser
 
 
-__version_info__ = ('0', '2', '9')
+__version_info__ = ('0', '3', '0')
 __version_branch__ = 'master'
 
 __version__ = "%s%s" % (
