@@ -64,7 +64,8 @@ def test_town_style():
         'usenet'
     )
 
-    assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2', 'extra': 'yEnc', 'size': '321,23 MB'}))
+    assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2'}))
+    assert_that(result, has_info('detail', {'extra': 'yEnc', 'size': '321,23 MB'}))
 
     assert_that(result, has_info('part', {'current': '01', 'total': '18'}))
 
