@@ -32,7 +32,9 @@ PATTERN_GROUPS = [
     ]),
 
     ('detail', [
-        r'[\s-]*\"(?P<file_name>.*?)\"[\s-]*(?P<size>[\d,\.]*\s?MB)?[\s-]*?(?P<extra>yEnc)',
+        r'[\s-]*\w*?[\s-]*\"(?P<file_name>.*?)\"[\s-]*\w*?[\s-]*(?P<size>[\d,\.]*\s?MB)?[\s-]*(?P<extra>yEnc)?',
+        r'(?P<size>[\d,\.]*\s?MB)[\s-]*(?P<extra>yEnc)',
+        r'(?P<size>[\d,\.]*\s?MB)|(?P<extra>yEnc)'
     ])
 ]
 
