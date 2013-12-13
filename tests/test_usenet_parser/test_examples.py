@@ -36,7 +36,14 @@ def test_basic():
 
     assert_that(result, has_info('part', {'current': '1', 'total': '33'}))
 
-    assert_that(result, has_info('release_name', ['Show', 'Name', 'S03E03', 'WEBRip', 'x264', 'GROUP']))
+    assert_that(result, has_info('release_name', [
+        (None, 'Show', '.'),
+        ('.', 'Name', '.'),
+        ('.', 'S03E03', '.'),
+        ('.', 'WEBRip', '.'),
+        ('.', 'x264', '-'),
+        ('-', 'GROUP', 'P')
+    ]))
 
     assert_that(result, has_info('usenet', {'group': '#abc.123@network'}))
     assert_that(result, has_info('usenet', {'code': '12345'}))
@@ -52,7 +59,20 @@ def test_alternative():
 
     assert_that(result, has_info('part', {'current': '1', 'total': '1'}))
 
-    assert_that(result, has_info('release_name', ['', 'Show', 'Name', 'S03E05', '720p', 'WEB', 'DL', 'DD5', '1', 'H', '264', 'GROUP']))
+    assert_that(result, has_info('release_name', [
+        (None, '', ' '),
+        (' ', 'Show', '.'),
+        ('.', 'Name', '.'),
+        ('.', 'S03E05', '.'),
+        ('.', '720p', '.'),
+        ('.', 'WEB', '-'),
+        ('-', 'DL', '.'),
+        ('.', 'DD5', '.'),
+        ('.', '1', '.'),
+        ('.', 'H', '.'),
+        ('.', '264', '-'),
+        ('-', 'GROUP', ' ')
+    ]))
 
     assert_that(result, has_info('usenet', {'group': '#abc.123'}))
     assert_that(result, has_info('usenet', {'code': '123456'}))
@@ -88,7 +108,14 @@ def test_bare():
         'usenet'
     )
 
-    assert_that(result, has_info('release_name', ['Show', 'Name', 'S03E05', 'HDTV', 'x264', 'GROUP']))
+    assert_that(result, has_info('release_name', [
+        (None, 'Show', '.'),
+        ('.', 'Name', '.'),
+        ('.', 'S03E05', '.'),
+        ('.', 'HDTV', '.'),
+        ('.', 'x264', '-'),
+        ('-', 'GROUP', 'P')
+    ]))
     assert_that(result, has_info('detail', {'file_name': 'Show.Name.S03E05.HDTV.x264-GROUP.par2', 'extra': 'yEnc'}))
 
 
@@ -98,7 +125,16 @@ def test_ugly():
         'usenet'
     )
 
-    assert_that(result, has_info('release_name', ['Show', 'Name', 'S01E01', 'GERMAN', 'ABCD', 'WS', 'XViD', 'GROUP']))
+    assert_that(result, has_info('release_name', [
+        (None, 'Show', '.'),
+        ('.', 'Name', '.'),
+        ('.', 'S01E01', '.'),
+        ('.', 'GERMAN', '.'),
+        ('.', 'ABCD', '.'),
+        ('.', 'WS', '.'),
+        ('.', 'XViD', '-'),
+        ('-', 'GROUP', 'P')
+    ]))
 
     assert_that(result, has_info('usenet', {'site': 'example.org'}))
 
