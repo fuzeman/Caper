@@ -88,7 +88,7 @@ class UsenetParser(Parser):
             .until_failure()\
             .execute()
 
-        self.capture_fragment('release_name', single=False) \
+        self.capture_fragment('release_name', single=False, include_separators=True) \
             .until_closure(node__re='usenet') \
             .until_closure(node__re='detail') \
             .until_closure(node__re='part') \

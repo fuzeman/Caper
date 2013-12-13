@@ -19,7 +19,7 @@ from logr import Logr
 class CaptureStep(object):
     REPR_KEYS = ['regex', 'func', 'single']
 
-    def __init__(self, capture_group, tag, source, regex=None, func=None, single=None):
+    def __init__(self, capture_group, tag, source, regex=None, func=None, single=None, **kwargs):
         #: @type: CaptureGroup
         self.capture_group = capture_group
 
@@ -34,11 +34,14 @@ class CaptureStep(object):
         #: @type: bool
         self.single = single
 
+        self.kwargs = kwargs
+
         self.matched = False
 
     def execute(self, fragment):
         """Execute step on fragment
 
+        :type fragment: CaperFragment
         :rtype : CaptureMatch
         """
 
@@ -70,10 +73,16 @@ class CaptureStep(object):
         else:
             Logr.debug('(execute) [raw] %s += "%s"', self.tag, fragment.value)
 
+            include_separators = self.kwargs.get('include_separators', False)
+
             # Populate CaptureMatch
             match.success = True
             match.weight = 1.0
-            match.result = fragment.value
+
+            if include_separators:
+                match.result = (fragment.left_sep, fragment.value, fragment.right_sep)
+            else:
+                match.result = fragment.value
 
         return match
 
