@@ -65,18 +65,20 @@ class Parser(object):
     # Capture Methods
     #
 
-    def capture_fragment(self, tag, regex=None, func=None, single=True):
+    def capture_fragment(self, tag, regex=None, func=None, single=True, **kwargs):
         return CaptureGroup(self, self.result).capture_fragment(
             tag,
             regex=regex,
             func=func,
-            single=single
+            single=single,
+            **kwargs
         )
 
-    def capture_closure(self, tag, regex=None, func=None, single=True):
+    def capture_closure(self, tag, regex=None, func=None, single=True, **kwargs):
         return CaptureGroup(self, self.result).capture_closure(
             tag,
             regex=regex,
             func=func,
-            single=single
+            single=single,
+            **kwargs
         )

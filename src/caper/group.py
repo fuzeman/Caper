@@ -44,7 +44,7 @@ class CaptureGroup(object):
         #: :type: list of CaptureConstraint
         self.post_constraints = []
 
-    def capture_fragment(self, tag, regex=None, func=None, single=True):
+    def capture_fragment(self, tag, regex=None, func=None, single=True, **kwargs):
         Logr.debug('capture_fragment("%s", "%s", %s, %s)', tag, regex, func, single)
 
         if self.step_source != 'fragment':
@@ -58,12 +58,13 @@ class CaptureGroup(object):
             'fragment',
             regex=regex,
             func=func,
-            single=single
+            single=single,
+            **kwargs
         ))
 
         return self
 
-    def capture_closure(self, tag, regex=None, func=None, single=True):
+    def capture_closure(self, tag, regex=None, func=None, single=True, **kwargs):
         Logr.debug('capture_closure("%s", "%s", %s, %s)', tag, regex, func, single)
 
         if self.step_source != 'closure':
@@ -77,7 +78,8 @@ class CaptureGroup(object):
             'closure',
             regex=regex,
             func=func,
-            single=single
+            single=single,
+            **kwargs
         ))
 
         return self
