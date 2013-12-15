@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from logr import Logr
-from caper.matcher import FragmentMatcher
+from caper.matcher import Matcher
 from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser

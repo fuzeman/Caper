@@ -18,7 +18,7 @@ from logr import Logr
 import re
 
 
-class FragmentMatcher(object):
+class Matcher(object):
     def __init__(self, pattern_groups):
         self.regex = {}
 

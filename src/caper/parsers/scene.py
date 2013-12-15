@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from logr import Logr
-from caper import FragmentMatcher
+from caper import Matcher
 from caper.parsers.base import Parser
 from caper.result import CaperFragmentNode
 
@@ -163,7 +163,7 @@ class SceneParser(Parser):
 
     def __init__(self, debug=False):
         if not SceneParser.matcher:
-            SceneParser.matcher = FragmentMatcher(PATTERN_GROUPS)
+            SceneParser.matcher = Matcher(PATTERN_GROUPS)
             Logr.info("Fragment matcher for %s created", self.__class__.__name__)
 
         super(SceneParser, self).__init__(SceneParser.matcher, debug)

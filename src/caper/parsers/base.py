@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from caper import FragmentMatcher
+from caper import Matcher
 from caper.group import CaptureGroup
 from caper.result import CaperResult, CaperClosureNode, CaperRootNode
 from logr import Logr

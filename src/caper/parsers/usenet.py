@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from logr import Logr
-from caper import FragmentMatcher
+from caper import Matcher
 from caper.parsers.base import Parser
 
 
@@ -44,7 +44,7 @@ class UsenetParser(Parser):
 
     def __init__(self, debug=False):
         if not UsenetParser.matcher:
-            UsenetParser.matcher = FragmentMatcher(PATTERN_GROUPS)
+            UsenetParser.matcher = Matcher(PATTERN_GROUPS)
             Logr.info("Fragment matcher for %s created", self.__class__.__name__)
 
         super(UsenetParser, self).__init__(UsenetParser.matcher, debug)

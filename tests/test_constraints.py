@@ -21,7 +21,7 @@ import logging
 from logr import Logr
 Logr.configure(logging.DEBUG)
 
-from caper import Caper, FragmentMatcher
+from caper import Caper, Matcher
 from caper.parsers.base import Parser
 from caper.group import CaptureGroup
 from caper.objects import CaperClosure
@@ -36,7 +36,7 @@ caper = Caper()
 
 class DummyParser(Parser):
     def __init__(self, pattern_groups, debug=False):
-        super(DummyParser, self).__init__(FragmentMatcher(pattern_groups), debug)
+        super(DummyParser, self).__init__(Matcher(pattern_groups), debug)
 
 
 def build_parser(name='Show.Name.S01E03-GROUP'):
