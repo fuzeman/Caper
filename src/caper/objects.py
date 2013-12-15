@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from caper.helpers import xrange_six
+from caper.helpers import xrange_six, is_list_type
+import re
 
 
 class CaperClosure(object):
@@ -122,3 +123,51 @@ class CaptureMatch(object):
 
     def __repr__(self):
         return self.__str__()
+
+
+class CaperPattern(object):
+    def __init__(self, patterns):
+        self.patterns = patterns
+
+    def compile(self):
+        patterns = self.patterns
+        self.patterns = []
+
+        for pattern in patterns:
+            if type(pattern) is tuple:
+                if len(pattern) == 2:
+                    # Construct OR-list pattern
+                    pattern = pattern[0] % '|'.join(pattern[1])
+                elif len(pattern) == 1:
+                    pattern = pattern[0]
+
+            # Compile the pattern
+            self.patterns.append(re.compile(pattern, re.IGNORECASE))
+
+        return len(patterns)
+
+    def __getitem__(self, index):
+        return self.patterns[index]
+
+    def __len__(self):
+        return len(self.patterns)
+
+    def __iter__(self):
+        return iter(self.patterns)
+
+    @staticmethod
+    def construct(value):
+        if type(value) is CaperPattern:
+            return value
+
+        # Transform into multi-fragment patterns
+        if isinstance(value, basestring):
+            return CaperPattern((value,))
+
+        if type(value) is tuple:
+            if len(value) == 2 and type(value[0]) is str and is_list_type(value[1], str):
+                return CaperPattern((value,))
+            else:
+                return CaperPattern(value)
+
+        raise ValueError("Unknown pattern format")

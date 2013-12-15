@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from caper.helpers import is_list_type, update_dict, delta_seconds
+from caper.objects import CaperPattern
 from datetime import datetime
 from logr import Logr
 import re
@@ -39,28 +40,9 @@ class Matcher(object):
             for weight, patterns in patterns:
                 weight_patterns = []
 
-                for pattern in patterns:
-                    # Transform into multi-fragment patterns
-                    if type(pattern) is str:
-                        pattern = (pattern,)
-
-                    if type(pattern) is tuple and len(pattern) == 2:
-                        if type(pattern[0]) is str and is_list_type(pattern[1], str):
-                            pattern = (pattern,)
-
-                    result = []
-                    for value in pattern:
-                        if type(value) is tuple:
-                            if len(value) == 2:
-                                # Construct OR-list pattern
-                                value = value[0] % '|'.join(value[1])
-                            elif len(value) == 1:
-                                value = value[0]
-
-                        result.append(re.compile(value, re.IGNORECASE))
-                        compile_count += 1
-
-                    weight_patterns.append(tuple(result))
+                for pattern in [CaperPattern.construct(v) for v in patterns if v]:
+                    compile_count += pattern.compile()
+                    weight_patterns.append(pattern)
 
                 self.regex[group_name].append((weight, weight_patterns))
 
@@ -118,10 +100,6 @@ class Matcher(object):
                 cur_fragment = fragment
                 success = True
                 result = {}
-
-                # Ignore empty patterns
-                if len(pattern) < 1:
-                    break
 
                 for fragment_pattern in pattern:
                     if not cur_fragment:
