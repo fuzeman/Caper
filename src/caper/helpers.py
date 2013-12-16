@@ -53,6 +53,9 @@ def clean_dict(target, remove=None):
 
 def update_dict(a, b):
     for key, value in b.items():
+        if value is None:
+            continue
+
         if key not in a:
             a[key] = value
         elif isinstance(a[key], dict) and isinstance(value, dict):

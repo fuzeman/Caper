@@ -121,9 +121,11 @@ class Matcher(object):
 
                     value, source = subject
 
-                    match = fragment_pattern.match(value)
-                    if match:
-                        update_dict(result, match.groupdict())
+                    matches = pattern.execute(fragment_pattern, value)
+
+                    if matches:
+                        for match in matches:
+                            update_dict(result, match.groupdict())
                     else:
                         success = False
                         break
@@ -132,7 +134,7 @@ class Matcher(object):
                         num_matched += 1
 
                 if success:
-                    Logr.debug("Found match with weight %s" % weight)
+                    Logr.debug('Found match with weight %s using regex pattern "%s"' % (weight, [sre.pattern for sre in pattern.patterns]))
                     return float(weight), result, num_matched
 
         return 0.0, None, 1

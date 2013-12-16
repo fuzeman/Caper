@@ -156,9 +156,10 @@ class CaptureMatch(object):
 
 
 class CaperPattern(object):
-    def __init__(self, patterns, include_separators=False):
+    def __init__(self, patterns, method='match', include_separators=False):
         self.patterns = patterns
 
+        self.method = method
         self.include_separators = include_separators
 
     def compile(self):
@@ -177,6 +178,15 @@ class CaperPattern(object):
             self.patterns.append(re.compile(pattern, re.IGNORECASE))
 
         return len(patterns)
+
+    def execute(self, fragment_pattern, value):
+        if self.method == 'match':
+            match = fragment_pattern.match(value)
+            return [match] if match else []
+        elif self.method == 'findall':
+            return list(fragment_pattern.finditer(value))
+
+        raise ValueError('Unknown pattern method "%s"' % self.method)
 
     def __getitem__(self, index):
         return self.patterns[index]

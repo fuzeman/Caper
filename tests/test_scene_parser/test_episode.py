@@ -69,6 +69,17 @@ def test_episode_repeat():
         ]
     }))
 
+    assert_result(caper.parse('Show.Name.S01E01E02.DVDrip.x264'), (1.0, {
+        'identifier': [
+            {'season': '01', 'episode': ['01', '02']}
+        ],
+        'show_name': ['Show', 'Name'],
+        'video': [
+            {'source': 'DVDrip'},
+            {'codec': 'x264'}
+        ]
+    }))
+
 
 def test_episode_extend():
     assert_result(caper.parse('Show.Name.S01E01-E02.DVDrip.x264'), (1.0, {

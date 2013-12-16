@@ -22,18 +22,30 @@ from caper.result import CaperFragmentNode
 PATTERN_GROUPS = [
     ('identifier', [
         (1.0, [
-            # S01E01-E02
+            # 'S01E01-E02' or 'S01E01 to E02'
             CaperPattern(
-                ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', '-', '^E(?P<episode_to>\d+)$'),
+                ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', 'to|-', '^E(?P<episode_to>\d+)$'),
                 include_separators=True
             ),
+
             # 'S03 E01 to E08' or 'S03 E01 - E09'
             ('^S(?P<season>\d+)$', '^E(?P<episode_from>\d+)$', '^(to|-)$', '^E(?P<episode_to>\d+)$'),
-            # 'E01 to E08' or 'E01 - E09'
-            ('^E(?P<episode_from>\d+)$', '^(to|-)$', '^E(?P<episode_to>\d+)$'),
 
-            # S01-S03
-            ('^S(?P<season_from>\d+)$', '^S(?P<season_to>\d+)$'),
+            # 'E01 to E08' or 'E01 - E09'
+            ('^E(?P<episode_from>\d+)$', 'to|-', '^E(?P<episode_to>\d+)$'),
+
+            # 'S01-S03' or 'S01 to S03'
+            CaperPattern(
+                ('^S(?P<season_from>\d+)$', 'to|-', '^S(?P<season_to>\d+)$'),
+                include_separators=True
+            ),
+
+            # S01E01E02 (repeat style)
+            CaperPattern(
+                ('(S(?P<season>\d+))?E(?P<episode>\d+)',),
+                method='findall'
+            ),
+
 
             # S02E13
             r'^S(?P<season>\d+)E(?P<episode>\d+)$',
