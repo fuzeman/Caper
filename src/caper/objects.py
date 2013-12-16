@@ -17,12 +17,37 @@ import re
 
 
 class CaperSubject(object):
-    def take(self, direction, count=None, include_self=True):
+    def __init__(self, value=None):
+        if value is None:
+            value = ""
+
+        #: :type: str
+        self.value = value
+
+    def take(self, direction, count=None, return_type='subject', include_self=True,
+             include_separators=False, include_source=False):
         if direction not in ['left', 'right']:
             raise ValueError('Un-Expected value for "direction", expected "left" or "right".')
 
+        def get_item(value):
+            source = None
+
+            if isinstance(value, basestring):
+                source = 'separator'
+
+            if isinstance(value, CaperSubject):
+                source = 'subject'
+
+                if return_type == 'value':
+                    value = value.value
+
+            if include_source:
+                return value, source
+
+            return value
+
         if include_self:
-            yield self
+            yield get_item(self)
 
             if count:
                 count -= 1
@@ -33,28 +58,31 @@ class CaperSubject(object):
         while n < count or count is None:
             if cur and getattr(cur, direction):
                 cur = getattr(cur, direction)
-                yield cur
+
+                if include_separators and hasattr(cur, 'left_sep'):
+                    yield get_item(cur.left_sep)
+
+                yield get_item(cur)
             else:
                 break
 
             n += 1
 
-    def take_left(self, count=None, include_self=True):
-        return self.take('left', count, include_self)
+    def take_left(self, count=None, **kwargs):
+        return self.take('left', count, **kwargs)
 
-    def take_right(self, count=None, include_self=True):
-        return self.take('right', count, include_self)
+    def take_right(self, count=None, **kwargs):
+        return self.take('right', count, **kwargs)
 
 
 class CaperClosure(CaperSubject):
     __key__ = 'closure'
 
     def __init__(self, index, value):
+        super(CaperClosure, self).__init__(value)
+
         #: :type: int
         self.index = index
-
-        #: :type: str
-        self.value = value
 
         #: :type: CaperClosure
         self.left = None
@@ -75,11 +103,10 @@ class CaperFragment(CaperSubject):
     __key__ = 'fragment'
 
     def __init__(self, closure=None):
+        super(CaperFragment, self).__init__()
+
         #: :type: CaperClosure
         self.closure = closure
-
-        #: :type: str
-        self.value = ""
 
         #: :type: CaperFragment
         self.left = None
@@ -129,8 +156,10 @@ class CaptureMatch(object):
 
 
 class CaperPattern(object):
-    def __init__(self, patterns):
+    def __init__(self, patterns, include_separators=False):
         self.patterns = patterns
+
+        self.include_separators = include_separators
 
     def compile(self):
         patterns = self.patterns

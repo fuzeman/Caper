@@ -14,6 +14,7 @@
 
 from logr import Logr
 from caper import Matcher
+from caper.objects import CaperPattern
 from caper.parsers.base import Parser
 from caper.result import CaperFragmentNode
 
@@ -22,7 +23,10 @@ PATTERN_GROUPS = [
     ('identifier', [
         (1.0, [
             # S01E01-E02
-            ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', '^E(?P<episode_to>\d+)$'),
+            CaperPattern(
+                ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', '-', '^E(?P<episode_to>\d+)$'),
+                include_separators=True
+            ),
             # 'S03 E01 to E08' or 'S03 E01 - E09'
             ('^S(?P<season>\d+)$', '^E(?P<episode_from>\d+)$', '^(to|-)$', '^E(?P<episode_to>\d+)$'),
             # 'E01 to E08' or 'E01 - E09'

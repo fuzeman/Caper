@@ -101,25 +101,38 @@ class Matcher(object):
                 success = True
                 result = {}
 
-                for cur_fragment, fragment_pattern in itertools.izip_longest(fragment.take_right(), pattern):
+                num_matched = 0
+
+                fragment_iterator = fragment.take_right(
+                    return_type='value',
+                    include_separators=pattern.include_separators,
+                    include_source=True
+                )
+
+                for subject, fragment_pattern in itertools.izip_longest(fragment_iterator, pattern):
                     # No patterns left to match
                     if not fragment_pattern:
                         break
 
                     # No fragments left to match against pattern
-                    if not cur_fragment:
+                    if not subject:
                         success = False
                         break
 
-                    match = fragment_pattern.match(cur_fragment.value)
+                    value, source = subject
+
+                    match = fragment_pattern.match(value)
                     if match:
                         update_dict(result, match.groupdict())
                     else:
                         success = False
                         break
 
+                    if source == 'subject':
+                        num_matched += 1
+
                 if success:
                     Logr.debug("Found match with weight %s" % weight)
-                    return float(weight), result, len(pattern)
+                    return float(weight), result, num_matched
 
         return 0.0, None, 1

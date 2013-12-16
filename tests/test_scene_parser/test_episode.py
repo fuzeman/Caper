@@ -74,7 +74,7 @@ def test_episode_extend():
     assert_result(caper.parse('Show.Name.S01E01-E02.DVDrip.x264'), (1.0, {
         'identifier': [
             {'season': '01', 'episode_from': '01', 'episode_to': '02'},
-            ],
+        ],
         'show_name': ['Show', 'Name'],
         'video': [
             {'source': 'DVDrip'},
