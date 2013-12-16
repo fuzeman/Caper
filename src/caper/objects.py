@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from caper.helpers import xrange_six, is_list_type
+from caper.helpers import is_list_type
+from caper.compat import basestring
 import re
 
 
@@ -55,7 +56,7 @@ class CaperSubject(object):
         cur = self
         n = 0
 
-        while n < count or count is None:
+        while count is None or n < count:
             if cur and getattr(cur, direction):
                 cur = getattr(cur, direction)
 

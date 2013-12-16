@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import itertools
 
-from caper.helpers import is_list_type, update_dict, delta_seconds
+from caper.helpers import update_dict, delta_seconds
 from caper.objects import CaperPattern
 from datetime import datetime
 from logr import Logr
-import re
+import caper.compat
+import itertools
 
 
 class Matcher(object):
