@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import itertools
 
 from caper.helpers import is_list_type, update_dict, delta_seconds
 from caper.objects import CaperPattern
@@ -97,11 +98,15 @@ class Matcher(object):
 
         for weight, patterns in weight_groups:
             for pattern in patterns:
-                cur_fragment = fragment
                 success = True
                 result = {}
 
-                for fragment_pattern in pattern:
+                for cur_fragment, fragment_pattern in itertools.izip_longest(fragment.take_right(), pattern):
+                    # No patterns left to match
+                    if not fragment_pattern:
+                        break
+
+                    # No fragments left to match against pattern
                     if not cur_fragment:
                         success = False
                         break
@@ -112,8 +117,6 @@ class Matcher(object):
                     else:
                         success = False
                         break
-
-                    cur_fragment = cur_fragment.right if cur_fragment else None
 
                 if success:
                     Logr.debug("Found match with weight %s" % weight)

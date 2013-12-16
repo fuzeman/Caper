@@ -16,7 +16,37 @@ from caper.helpers import xrange_six, is_list_type
 import re
 
 
-class CaperClosure(object):
+class CaperSubject(object):
+    def take(self, direction, count=None, include_self=True):
+        if direction not in ['left', 'right']:
+            raise ValueError('Un-Expected value for "direction", expected "left" or "right".')
+
+        if include_self:
+            yield self
+
+            if count:
+                count -= 1
+
+        cur = self
+        n = 0
+
+        while n < count or count is None:
+            if cur and getattr(cur, direction):
+                cur = getattr(cur, direction)
+                yield cur
+            else:
+                break
+
+            n += 1
+
+    def take_left(self, count=None, include_self=True):
+        return self.take('left', count, include_self)
+
+    def take_right(self, count=None, include_self=True):
+        return self.take('right', count, include_self)
+
+
+class CaperClosure(CaperSubject):
     __key__ = 'closure'
 
     def __init__(self, index, value):
@@ -41,7 +71,7 @@ class CaperClosure(object):
         return self.__str__()
 
 
-class CaperFragment(object):
+class CaperFragment(CaperSubject):
     __key__ = 'fragment'
 
     def __init__(self, closure=None):
@@ -64,35 +94,8 @@ class CaperFragment(object):
         #: :type: int
         self.position = None
 
-    def take(self, direction, count, include_self=True):
-        if direction not in ['left', 'right']:
-            raise ValueError('Un-Expected value for "direction", expected "left" or "right".')
-
-        result = []
-
-        if include_self:
-            result.append(self)
-            count -= 1
-
-        cur = self
-        for x in xrange_six(count):
-            if cur and getattr(cur, direction):
-                cur = getattr(cur, direction)
-                result.append(cur)
-            else:
-                result.append(None)
-                cur = None
-
-        return result
-
-    def take_left(self, count, include_self=True):
-        return self.take('left', count, include_self)
-
-    def take_right(self, count, include_self=True):
-        return self.take('right', count, include_self)
-
     def __str__(self):
-        return "<CaperFragment value: %s" % repr(self.value)
+        return "<CaperFragment value: %s>" % repr(self.value)
 
     def __repr__(self):
         return self.__str__()

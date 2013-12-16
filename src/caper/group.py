@@ -133,7 +133,7 @@ class CaptureGroup(object):
 
         result = [CaperFragmentNode(
             parent_node.closure,
-            subject.take_right(match.num_fragments),
+            list(subject.take_right(match.num_fragments)),
             parent_head,
             match
         )]
