@@ -54,7 +54,7 @@ def create_fragments(value):
 
 
 def get_fragment_values(fragments):
-    return [(fragment.value if fragment else None) for fragment in fragments]
+    return list([(fragment.value if fragment else None) for fragment in fragments])
 
 
 def assert_result(result, *chains):

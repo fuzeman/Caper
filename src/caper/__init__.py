@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from logr import Logr
-from caper.matcher import FragmentMatcher
+from caper.matcher import Matcher
 from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
 from caper.parsers.usenet import UsenetParser
 
 
-__version_info__ = ('0', '3', '1')
+__version_info__ = ('0', '3', '2')
 __version_branch__ = 'master'
 
 __version__ = "%s%s" % (

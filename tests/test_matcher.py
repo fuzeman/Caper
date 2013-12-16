@@ -15,7 +15,7 @@
 from helpers import setup_path
 setup_path()
 
-from caper import FragmentMatcher
+from caper import Matcher
 from matchers import matches_dict
 from helpers import create_fragments
 from hamcrest import assert_that, none
@@ -23,7 +23,7 @@ import pytest
 
 
 def test_matcher_construction():
-    matcher = FragmentMatcher([
+    matcher = Matcher([
         ('test', [
             (1.0, [
                 ()
@@ -45,7 +45,7 @@ def test_matcher_construction():
 
 
 def test_fragment_match():
-    matcher = FragmentMatcher([
+    matcher = Matcher([
         ('test', [
             (1.0, [
                 (r'^abc$', r'^123$'),
@@ -68,7 +68,7 @@ def test_fragment_match():
 
     assert matcher.fragment_match(create_fragments('def.123')[0], 'test')[0] == 0
 
-    matcher = FragmentMatcher([
+    matcher = Matcher([
         ('test', [
             (1.0, [
                 ()
@@ -83,7 +83,7 @@ def test_fragment_match():
 
 
 def test_value_match():
-    matcher = FragmentMatcher([
+    matcher = Matcher([
         ('test', [
             (1.0, [
                 r'^(?P<a>abc)$',

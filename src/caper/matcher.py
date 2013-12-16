@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from caper.helpers import is_list_type, update_dict, delta_seconds
+from caper.helpers import update_dict, delta_seconds
+from caper.objects import CaperPattern
 from datetime import datetime
 from logr import Logr
-import re
+import caper.compat
+import itertools
 
 
-class FragmentMatcher(object):
+class Matcher(object):
     def __init__(self, pattern_groups):
         self.regex = {}
 
@@ -39,28 +41,9 @@ class FragmentMatcher(object):
             for weight, patterns in patterns:
                 weight_patterns = []
 
-                for pattern in patterns:
-                    # Transform into multi-fragment patterns
-                    if type(pattern) is str:
-                        pattern = (pattern,)
-
-                    if type(pattern) is tuple and len(pattern) == 2:
-                        if type(pattern[0]) is str and is_list_type(pattern[1], str):
-                            pattern = (pattern,)
-
-                    result = []
-                    for value in pattern:
-                        if type(value) is tuple:
-                            if len(value) == 2:
-                                # Construct OR-list pattern
-                                value = value[0] % '|'.join(value[1])
-                            elif len(value) == 1:
-                                value = value[0]
-
-                        result.append(re.compile(value, re.IGNORECASE))
-                        compile_count += 1
-
-                    weight_patterns.append(tuple(result))
+                for pattern in [CaperPattern.construct(v) for v in patterns if v]:
+                    compile_count += pattern.compile()
+                    weight_patterns.append(pattern)
 
                 self.regex[group_name].append((weight, weight_patterns))
 
@@ -115,30 +98,43 @@ class FragmentMatcher(object):
 
         for weight, patterns in weight_groups:
             for pattern in patterns:
-                cur_fragment = fragment
                 success = True
                 result = {}
 
-                # Ignore empty patterns
-                if len(pattern) < 1:
-                    break
+                num_matched = 0
 
-                for fragment_pattern in pattern:
-                    if not cur_fragment:
+                fragment_iterator = fragment.take_right(
+                    return_type='value',
+                    include_separators=pattern.include_separators,
+                    include_source=True
+                )
+
+                for subject, fragment_pattern in itertools.izip_longest(fragment_iterator, pattern):
+                    # No patterns left to match
+                    if not fragment_pattern:
+                        break
+
+                    # No fragments left to match against pattern
+                    if not subject:
                         success = False
                         break
 
-                    match = fragment_pattern.match(cur_fragment.value)
-                    if match:
-                        update_dict(result, match.groupdict())
+                    value, source = subject
+
+                    matches = pattern.execute(fragment_pattern, value)
+
+                    if matches:
+                        for match in matches:
+                            update_dict(result, match.groupdict())
                     else:
                         success = False
                         break
 
-                    cur_fragment = cur_fragment.right if cur_fragment else None
+                    if source == 'subject':
+                        num_matched += 1
 
                 if success:
-                    Logr.debug("Found match with weight %s" % weight)
-                    return float(weight), result, len(pattern)
+                    Logr.debug('Found match with weight %s using regex pattern "%s"' % (weight, [sre.pattern for sre in pattern.patterns]))
+                    return float(weight), result, num_matched
 
         return 0.0, None, 1

@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from helpers import setup_path
-setup_path()
-
-from helpers import create_fragments, get_fragment_values
+import sys
+import itertools
 
 
-def test_fragment_take():
-    fragments = create_fragments('a.b.c.123')
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
-    assert get_fragment_values(fragments[0].take_right(2)) == ['a', 'b']
-    assert get_fragment_values(fragments[0].take_right(6)) == ['a', 'b', 'c', '123']
+basestring = basestring if PY2 else str
 
-    assert get_fragment_values(fragments[3].take_left(2)) == ['123', 'c']
-    assert get_fragment_values(fragments[2].take_left(6)) == ['c', 'b', 'a']
+if PY3:
+    itertools.izip_longest = itertools.zip_longest
