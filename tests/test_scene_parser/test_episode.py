@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from helpers import setup_path
+from matchers import has_info
+
 setup_path()
 
 import logging
@@ -21,6 +23,7 @@ Logr.configure(logging.DEBUG)
 
 from caper import Caper
 from helpers import assert_result
+from hamcrest import assert_that
 
 caper = Caper()
 
@@ -69,16 +72,20 @@ def test_episode_repeat():
         ]
     }))
 
-    assert_result(caper.parse('Show.Name.S01E01E02.DVDrip.x264'), (1.0, {
-        'identifier': [
-            {'season': '01', 'episode': ['01', '02']}
-        ],
-        'show_name': ['Show', 'Name'],
-        'video': [
-            {'source': 'DVDrip'},
-            {'codec': 'x264'}
-        ]
-    }))
+    assert_that(
+        caper.parse('Show.Name.S01E01E02.DVDrip.x264'),
+        has_info('identifier', {'season': '01', 'episode': ['01', '02']})
+    )
+
+    assert_that(
+        caper.parse('Show.Name.S01E01&E02.DVDrip.x264'),
+        has_info('identifier', {'season': '01', 'episode': ['01', '02']})
+    )
+
+    assert_that(
+        caper.parse('Show.Name.S01 E01 & E02.DVDrip.x264'),
+        has_info('identifier', [{'season': '01', 'episode': '01'}, {'episode': '02'}])
+    )
 
 
 def test_episode_extend():
