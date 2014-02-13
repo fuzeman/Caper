@@ -40,6 +40,12 @@ PATTERN_GROUPS = [
                 include_separators=True
             ),
 
+            # 'S01E01-E02', 'S01E01-02' or 'S01E01 to E02'
+            CaperPattern(
+                ('^S(?P<season>\d+)E(?P<episode_from>\d+)$', 'to|-', '^E?(?P<episode_to>\d+)$'),
+                include_separators=True
+            ),
+
             # S01E01E02 (repeat style)
             CaperPattern(
                 ('(S(?P<season>\d+))?E(?P<episode>\d+)',),
