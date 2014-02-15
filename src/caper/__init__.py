@@ -45,6 +45,8 @@ CL_END = 1
 
 
 class Caper(object):
+    version = __version__
+
     def __init__(self, debug=False):
         self.debug = debug
 
