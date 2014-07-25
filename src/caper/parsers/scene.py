@@ -84,7 +84,9 @@ PATTERN_GROUPS = [
         (0.8, [
             # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years my mistake)
             # TODO - Update this pattern on 31 Dec 2099
-            r'^(?P<season>([1-9])|(1[0-8])|(2[1-9])|([3-9][0-9]))(?P<episode>\d{2})$'
+            (r'^(?P<season>([1-9])|(1[0-8])|(2[1-9])|([3-9][0-9]))(?P<episode>\d{2})$'),
+            # "6 of 10" style numbering
+            (r'^(?P<absolute>\d+)$', r'of', r'\d+')
         ]),
         (0.5, [
             # 100 - 9999
