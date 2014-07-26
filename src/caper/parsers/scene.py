@@ -78,6 +78,10 @@ PATTERN_GROUPS = [
             # Part.1.and.Part.3
             ('^Part$', '(?P<part>\d+)'),
 
+            # Part.IV
+            # Roman Numerals (up to max value of 29)
+            ('(p(ar)?t|ep(isode)?)', '(?P<roman_ep>X{0,2}(IX|IV|V?I{0,3}))'),
+
             r'(?P<extra>Special)',
             r'(?P<country>NZ|AU|US|UK)'
         ]),
