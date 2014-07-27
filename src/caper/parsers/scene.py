@@ -84,13 +84,20 @@ PATTERN_GROUPS = [
             # Part.1.and.Part.3
             ('^Part$', '(?P<part>\d+)'),
 
+            # Part.IV
+            # Roman Numerals (up to max value of 29)
+            ('(p(ar)?t|ep(isode)?)', '(?P<roman_ep>X{0,2}(IX|IV|V?I{0,3}))'),
+
             r'(?P<extra>Special)',
             r'(?P<country>NZ|AU|US|UK)'
         ]),
         (0.8, [
             # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years by mistake)
             # TODO - Update this pattern on 31 Dec 2099
-            r'^(?P<season>([1-9])|(1[0-8])|(2[1-9])|([3-9][0-9]))(?P<episode>\d{2})$'
+            (r'^(?P<season>([1-9])|(1[0-8])|(2[1-9])|([3-9][0-9]))(?P<episode>\d{2})$'),
+            
+            # "6 of 10" style numbering
+            (r'^(?P<absolute>\d+)$', r'of', r'\d+')
         ]),
         (0.5, [
             # 100 - 9999
