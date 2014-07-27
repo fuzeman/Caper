@@ -17,6 +17,7 @@ from caper import Matcher
 from caper.objects import CaperPattern
 from caper.parsers.base import Parser
 from caper.result import CaperFragmentNode
+from caper.transformers.roman_numerals import RomanNumerals
 
 
 PATTERN_GROUPS = [
@@ -86,7 +87,10 @@ PATTERN_GROUPS = [
 
             # Part.IV
             # Roman Numerals (up to max value of 29)
-            ('(p(ar)?t|ep(isode)?)', '(?P<roman_ep>X{0,2}(IX|IV|V?I{0,3}))'),
+            CaperPattern(
+                ('(p(ar)?t|ep(isode)?)', '(?P<part>X{0,2}(IX|IV|V?I{0,3}))'),
+                transform=lambda matches: RomanNumerals.transform(matches, 'part')
+            ),
 
             r'(?P<extra>Special)',
             r'(?P<country>NZ|AU|US|UK)'

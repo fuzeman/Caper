@@ -18,16 +18,6 @@ import sys
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
-ROMAN_NUMERAL_KEY = {
-    "i" : 1,
-    "v" : 5,
-    "x" : 10,
-    "l" : 50,
-    "c" : 100,
-    "d" : 500,
-    "m" : 1000,
-}
-
 def is_list_type(obj, element_type):
     if not type(obj) is list:
         return False
@@ -90,25 +80,3 @@ def xrange_six(start, stop=None, step=None):
 
 def delta_seconds(td):
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
-
-
-def number_from_rn(n):
-    return ROMAN_NUMERAL_KEY[str.lower(n)]
-
-
-def roman_numerals_convert(roman_number):
-    total = 0
-
-    while roman_number:
-        first_digit = number_from_rn(roman_number[0])
-        if len(roman_number) > 1:
-            second_digit = number_from_rn(roman_number[1])
-        else:
-            second_digit = -1
-        if first_digit >= second_digit:
-            total = total + first_digit
-            roman_number = roman_number[1:]
-        else:
-            total = total + (second_digit - first_digit)
-            roman_number = roman_number[2:]
-    return total

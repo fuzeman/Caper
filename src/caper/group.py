@@ -15,7 +15,7 @@
 
 from logr import Logr
 from caper import CaperClosure, CaperFragment
-from caper.helpers import clean_dict, roman_numerals_convert
+from caper.helpers import clean_dict
 from caper.result import CaperFragmentNode, CaperClosureNode
 from caper.step import CaptureStep
 from caper.constraint import CaptureConstraint
@@ -203,13 +203,6 @@ class CaptureGroup(object):
 
             if match.success:
                 if type(match.result) is dict:
-                    try:
-                        roman_ep_convert = roman_numerals_convert(match.result['roman_ep'])
-                        Logr.info('Roman Numeral %s converting to %s', match.result['roman_ep'], roman_ep_convert)
-                        match.result['roman_ep'] = roman_ep_convert
-                    except KeyError:
-                        pass
-
                     match.result = clean_dict(match.result)
 
                 Logr.debug('Found match with weight %s, match: %s, num_fragments: %s' % (
