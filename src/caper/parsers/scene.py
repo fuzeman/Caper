@@ -88,7 +88,7 @@ PATTERN_GROUPS = [
             r'(?P<country>NZ|AU|US|UK)'
         ]),
         (0.8, [
-            # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years my mistake)
+            # 100 - 1899, 2100 - 9999 (skips 1900 to 2099 - so we don't get years by mistake)
             # TODO - Update this pattern on 31 Dec 2099
             r'^(?P<season>([1-9])|(1[0-8])|(2[1-9])|([3-9][0-9]))(?P<episode>\d{2})$'
         ]),
