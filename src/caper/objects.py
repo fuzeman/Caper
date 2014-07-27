@@ -180,7 +180,7 @@ class CaperPattern(object):
             # Compile the pattern
             try:
                 self.patterns.append(re.compile(pattern, re.IGNORECASE))
-            except Exception, ex:
+            except Exception as ex:
                 Logr.error('Unable to compile pattern "%s"', pattern)
                 raise ex
 
@@ -201,7 +201,7 @@ class CaperPattern(object):
         if self.transform:
             try:
                 return self.transform(matches)
-            except Exception, ex:
+            except Exception as ex:
                 Logr.warn('Exception raised while transforming matches: %s', ex)
 
         return matches
