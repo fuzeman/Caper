@@ -113,8 +113,13 @@ PATTERN_GROUPS = [
         r'(?P<aspect>FS|WS)',
 
         (r'(?P<resolution>%s)', [
+            '480i',
             '480p',
+            '576i',
+            '576p',
+            '720i',
             '720p',
+            '1080i',
             '1080p'
         ]),
 
