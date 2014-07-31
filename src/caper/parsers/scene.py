@@ -151,11 +151,15 @@ PATTERN_GROUPS = [
             'x264',
             'XViD',
             'H264',
-            'AVC'
+            'AVC',
+            'MPEG2'
         ]),
 
         # For multi-fragment 'H 264' tags
         ('(?P<codec>H)', '(?P<codec>264)'),
+
+        # For multi-fragment 'MPEG 2' tags
+        ('(?P<codec>MPEG)', '(?P<codec>2)'),
     ]),
 
     ('dvd', [
