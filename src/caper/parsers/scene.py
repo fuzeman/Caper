@@ -129,6 +129,8 @@ PATTERN_GROUPS = [
 
         (r'(?P<source>%s)', [
             'DVDRiP',
+            'TVRIP',
+            'SDTV',
             # HDTV
             'HDTV',
             'PDTV',
@@ -143,11 +145,18 @@ PATTERN_GROUPS = [
             # DVD
             'DVDR',
             'DVD9',
-            'DVD5'
+            'DVD5',
+            'HDDVD'
         ]),
 
         # For multi-fragment 'WEB-DL', 'WEB-Rip', etc... matches
         ('(?P<source>WEB)', '(?P<source>DL|Rip)'),
+
+        # For multi-fragment 'HD DVD' tags
+        ('(?P<source>HD)', '(?P<source>DVD)'),
+
+        # For multi-fragment 'Blu Ray' tags
+        ('(?P<source>Blu)', '(?P<source>Ray)'),
 
         #
         # Codec
