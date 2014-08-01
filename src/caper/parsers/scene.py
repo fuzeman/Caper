@@ -136,6 +136,7 @@ PATTERN_GROUPS = [
             # WEB
             'WEBRip',
             'WEBDL',
+            'iTunes',
             # BluRay
             'BluRay',
             'B(D|R)Rip',
