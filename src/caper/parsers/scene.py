@@ -113,8 +113,13 @@ PATTERN_GROUPS = [
         r'(?P<aspect>FS|WS)',
 
         (r'(?P<resolution>%s)', [
+            '480i',
             '480p',
+            '576i',
+            '576p',
+            '720i',
             '720p',
+            '1080i',
             '1080p'
         ]),
 
@@ -124,6 +129,8 @@ PATTERN_GROUPS = [
 
         (r'(?P<source>%s)', [
             'DVDRiP',
+            'TVRIP',
+            'SDTV',
             # HDTV
             'HDTV',
             'PDTV',
@@ -131,17 +138,25 @@ PATTERN_GROUPS = [
             # WEB
             'WEBRip',
             'WEBDL',
+            'iTunes',
             # BluRay
             'BluRay',
             'B(D|R)Rip',
             # DVD
             'DVDR',
             'DVD9',
-            'DVD5'
+            'DVD5',
+            'HDDVD'
         ]),
 
         # For multi-fragment 'WEB-DL', 'WEB-Rip', etc... matches
         ('(?P<source>WEB)', '(?P<source>DL|Rip)'),
+
+        # For multi-fragment 'HD DVD' tags
+        ('(?P<source>HD)', '(?P<source>DVD)'),
+
+        # For multi-fragment 'Blu Ray' tags
+        ('(?P<source>Blu)', '(?P<source>Ray)'),
 
         #
         # Codec
@@ -151,11 +166,15 @@ PATTERN_GROUPS = [
             'x264',
             'XViD',
             'H264',
-            'AVC'
+            'AVC',
+            'MPEG2'
         ]),
 
         # For multi-fragment 'H 264' tags
         ('(?P<codec>H)', '(?P<codec>264)'),
+
+        # For multi-fragment 'MPEG 2' tags
+        ('(?P<codec>MPEG)', '(?P<codec>2)'),
     ]),
 
     ('dvd', [
