@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from logr import Logr
 from caper.matcher import Matcher
 from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
 from caper.parsers.usenet import UsenetParser
+
+try:
+    from logr import Logr
+except ImportError:
+    pass
 
 
 __version_info__ = ('0', '3', '2')
