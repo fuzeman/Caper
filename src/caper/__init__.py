@@ -184,6 +184,9 @@ class Caper(object):
         return closures
 
     def parse(self, name, parser='scene'):
+        if not name:
+            return None
+
         closures = self._closure_split(name)
         closures = self._fragment_split(closures)
 
@@ -196,6 +199,9 @@ class Caper(object):
 
         if parser not in self.parsers:
             raise ValueError("Unknown parser")
+
+        if not closures:
+            return None
 
         # TODO autodetect the parser type
         return self.parsers[parser](self.debug).run(closures)

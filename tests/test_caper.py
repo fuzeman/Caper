@@ -30,3 +30,9 @@ caper = Caper()
 def test_unknown_parser():
     with pytest.raises(ValueError):
         caper.parse('Show.Name.S01E01', 'unknown-parser')
+
+
+def test_no_closures():
+    result = caper.parse('')
+
+    assert result is None
