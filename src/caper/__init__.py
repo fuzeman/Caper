@@ -24,7 +24,7 @@ except ImportError:
     pass
 
 
-__version_info__ = ('0', '3', '2')
+__version_info__ = ('0', '3', '3')
 __version_branch__ = 'master'
 
 __version__ = "%s%s" % (
