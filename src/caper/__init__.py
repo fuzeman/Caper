@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from logr import Logr
 from caper.matcher import Matcher
 from caper.objects import CaperFragment, CaperClosure
 from caper.parsers.anime import AnimeParser
 from caper.parsers.scene import SceneParser
 from caper.parsers.usenet import UsenetParser
 
+try:
+    from logr import Logr
+except ImportError:
+    pass
 
-__version_info__ = ('0', '3', '2')
+
+__version_info__ = ('0', '3', '3')
 __version_branch__ = 'master'
 
 __version__ = "%s%s" % (
@@ -45,6 +49,8 @@ CL_END = 1
 
 
 class Caper(object):
+    version = __version__
+
     def __init__(self, debug=False):
         self.debug = debug
 
@@ -178,6 +184,9 @@ class Caper(object):
         return closures
 
     def parse(self, name, parser='scene'):
+        if not name:
+            return None
+
         closures = self._closure_split(name)
         closures = self._fragment_split(closures)
 
@@ -186,10 +195,13 @@ class Caper(object):
             Logr.debug("closure [%s]", closure.value)
 
             for fragment in closure.fragments:
-                Logr.debug("\tfragment [%s]", fragment.value)
+                Logr.debug("\tfragment (%s)[%s](%s)", fragment.left_sep, fragment.value, fragment.right_sep)
 
         if parser not in self.parsers:
             raise ValueError("Unknown parser")
+
+        if not closures:
+            return None
 
         # TODO autodetect the parser type
         return self.parsers[parser](self.debug).run(closures)

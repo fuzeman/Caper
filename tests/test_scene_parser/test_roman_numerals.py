@@ -22,17 +22,22 @@ Logr.configure(logging.DEBUG)
 from caper import Caper
 from matchers import has_info
 from hamcrest import *
-import pytest
 
 caper = Caper()
 
 
-def test_unknown_parser():
-    with pytest.raises(ValueError):
-        caper.parse('Show.Name.S01E01', 'unknown-parser')
+def test_roman_numerals():
+    assert_that(
+        caper.parse('Show.Name.Part.III.DVDrip.x264'),
+        has_info('identifier', {'part': 3})
+    )
 
+    assert_that(
+        caper.parse('Show.Name.Part.IV.DVDrip.x264'),
+        has_info('identifier', {'part': 4})
+    )
 
-def test_no_closures():
-    result = caper.parse('')
-
-    assert result is None
+    assert_that(
+        caper.parse('Show.Name.Part.XI.DVDrip.x264'),
+        has_info('identifier', {'part': 11})
+    )

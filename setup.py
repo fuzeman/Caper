@@ -12,19 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from setuptools import setup, find_packages
+
+import sys
+sys.path.insert(0, 'src')
+
 from caper import __version__
-from distutils.core import setup
 
 
 setup(
     name='caper',
     version=__version__,
-    packages=['caper', 'caper.parsers'],
-    package_dir={'': 'src'},
-    url='https://github.com/fuzeman/caper',
     license='Apache License, Version 2.0',
+    url='https://github.com/fuzeman/caper',
+
     author='Dean Gardiner',
     author_email='gardiner91@gmail.com',
+
     description='Extensible filename parsing library for Python',
+    packages=find_packages('src', exclude=['tests']),
+    package_dir={'': 'src'},
+
     requires=['Logr']
 )
